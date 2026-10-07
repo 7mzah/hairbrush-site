@@ -15,6 +15,14 @@ export default function OrderForm({ price, currency }) {
     setState({ status: "sending", msg: "" });
     try {
       const data = Object.fromEntries(new FormData(form));
+      // The honeypot can get filled by Android/desktop autofill or a password
+      // manager even for a real customer. Never let that drop a human's order:
+      // strip it here, while the server still rejects anything that POSTs it
+      // directly without running this code.
+      if (data.website) {
+        console.warn("[order] honeypot field was autofilled; clearing before submit");
+        delete data.website;
+      }
       const res = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
       const out = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -59,7 +67,9 @@ export default function OrderForm({ price, currency }) {
         </div>
       </div>
       <label>Delivery address<textarea name="address" rows="2" required autoComplete="street-address" placeholder="Street, building, floor…" /></label>
-      <input name="website" className="hp" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+      {/* readOnly: autofill engines skip readonly inputs, but happily fill
+          off-screen ones — which is exactly how real orders got dropped. */}
+      <input name="website" className="hp" tabIndex={-1} autoComplete="off" readOnly aria-hidden="true" />
       <button disabled={state.status === "sending"}>
         <span className="cta-main">{state.status === "sending" ? "Sending…" : "Order now"}</span>
         <span className="cta-sub">Pay {money((Number(qty) || 1) * price, currency)} on delivery</span>

@@ -8,18 +8,30 @@ const clean = (v, max) => String(v ?? "").trim().slice(0, max);
 
 export async function POST(req) {
   const b = await req.json().catch(() => ({}));
-  if (b.website) return Response.json({ ok: true }); // honeypot: pretend it worked
+  // honeypot: pretend it worked so bots learn nothing — but say so in the logs,
+  // otherwise a dropped order looks identical to a missing notification.
+  if (b.website) {
+    console.warn(`[orders] honeypot filled by ${clientIp(req)} — faked success, not saved`);
+    return Response.json({ ok: true });
+  }
 
-  if (!rateLimit(`order:${clientIp(req)}`))
+  if (!rateLimit(`order:${clientIp(req)}`)) {
+    console.warn(`[orders] rate limited: ${clientIp(req)}`);
     return Response.json(
       { error: "Too many orders just now. Please wait a minute and try again." },
       { status: 429, headers: { "Retry-After": "60" } }
     );
+  }
 
   const name = clean(b.name, 80), phone = clean(b.phone, 20), city = clean(b.city, 60), address = clean(b.address, 200);
   const qty = Math.min(Math.max(parseInt(b.qty, 10) || 1, 1), 10);
-  if (!name || !city || !address || phone.replace(/\D/g, "").length < 7)
+  const phoneDigits = phone.replace(/\D/g, "").length;
+  if (!name || !city || !address || phoneDigits < 7) {
+    console.warn(
+      `[orders] rejected 400: ${[!name && "name", !city && "city", !address && "address", phoneDigits < 7 && "phone"].filter(Boolean).join(", ")}`
+    );
     return Response.json({ error: "Please fill in every field with a valid phone number." }, { status: 400 });
+  }
 
   const total = qty * PRODUCT.price;
   const db = await getDb();
