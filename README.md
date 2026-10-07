@@ -1,5 +1,5 @@
 # Hairbrush site
-Next.js (App Router) + route handlers + SQLite (better-sqlite3).
+Next.js (App Router) + route handlers + SQLite via `@libsql/client` — Turso in the cloud, or a local `orders.db` file.
 1. `npm install && npm run dev`
 2. Set the brand, product name, price and currency in `lib/config.js`; put your photo in `public/` and swap it into `app/page.js`.
 
@@ -11,6 +11,8 @@ Set these where you deploy (a `.env.local` works locally):
 | `SITE_URL` | production | Canonical URL used for metadata, `robots.txt` and `sitemap.xml` (e.g. `https://example.com`) |
 | `ADMIN_KEY` | to read orders | `GET /api/orders` with header `x-admin-key` |
 | `DB_PATH` | no | Where `orders.db` lives (defaults to the project root) |
+| `TURSO_DATABASE_URL` | for cloud | Turso/libSQL connection string (`libsql://…`). Unset = falls back to a local `orders.db` file |
+| `TURSO_AUTH_TOKEN` | with `TURSO_DATABASE_URL` | Turso API token; required for any `libsql://` URL |
 | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | no | New-order message on Telegram |
 | `ORDER_WEBHOOK_URL` | no | Fallback: `POST { event: "order.created", order }` to your own endpoint |
 | `PLAUSIBLE_DOMAIN` | no | Plausible site domain (e.g. `example.com`). Unset = no analytics tag is injected at all |

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Single-page Next.js (App Router) product site with cash-on-delivery ordering, backed by SQLite (`better-sqlite3`). Full env-var table and deploy notes are in `README.md`.
+Single-page Next.js (App Router) product site with cash-on-delivery ordering, backed by libSQL via `@libsql/client` (Turso in the cloud, a local file in dev). Full env-var table and deploy notes are in `README.md`.
 
 There is **no lint, test, typecheck, or formatter tooling** — do not invent `npm run lint` / `npm test`. `npm run build` is the only automated verification.
 
