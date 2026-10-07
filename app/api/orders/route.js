@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { getDb } from "@/lib/db";
 import { PRODUCT } from "@/lib/config";
 import { notifyNewOrder } from "@/lib/notify";
@@ -28,7 +29,12 @@ export async function POST(req) {
   });
   const order = { id: Number(info.lastInsertRowid), name, phone, city, address, qty, total, currency: PRODUCT.currency };
 
-  void notifyNewOrder(order); // never blocks or fails the order
+  // Start the notification now, and hand the promise to `after()` so the
+  // serverless invocation stays alive until it settles (Vercel waitUntil).
+  // Without this the function can freeze right after the response and the
+  // Telegram send is silently dropped. Never blocks or fails the order.
+  const notify = notifyNewOrder(order);
+  after(() => notify);
   return Response.json({ ok: true, id: order.id });
 }
 

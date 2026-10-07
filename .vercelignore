@@ -1,0 +1,4 @@
+# Never upload local secrets or the dev database with a deployment.
+.env*
+orders.db*
+.vercel
