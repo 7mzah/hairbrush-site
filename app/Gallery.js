@@ -174,13 +174,18 @@ export default function Gallery({ photos }) {
           {active + 1} / {photos.length}
         </span>
         <button type="button" className="lightbox-close" aria-label="Close expanded view" onClick={() => setIsZoomed(false)}>
-          ✕
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="18" y1="6" x2="6" y2="18" />
+          </svg>
         </button>
       </div>
 
       <div className="lightbox-stage">
         <button type="button" className="lightbox-nav is-prev" aria-label="Previous photo" onClick={prevPhoto}>
-          ‹
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="15 5 8 12 15 19" />
+          </svg>
         </button>
 
         <div className="lightbox-viewer">
@@ -197,7 +202,9 @@ export default function Gallery({ photos }) {
         </div>
 
         <button type="button" className="lightbox-nav is-next" aria-label="Next photo" onClick={nextPhoto}>
-          ›
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="9 5 16 12 9 19" />
+          </svg>
         </button>
       </div>
 

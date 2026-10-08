@@ -216,7 +216,8 @@ footer p{margin:.35rem 0}
 
 .lightbox-top{display:flex;align-items:center;justify-content:space-between;max-width:1200px;width:100%;margin:0 auto;color:#e8d9d2;font-size:15px;font-weight:600}
 .lightbox-count{font-variant-numeric:tabular-nums;letter-spacing:.05em}
-.lightbox-close{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:18px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s ease,transform .15s ease}
+.lightbox-close{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;font-family:inherit;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s ease,transform .15s ease}
+.lightbox-close svg{width:16px;height:16px;flex:none}
 .lightbox-close:hover{background:var(--sun);color:var(--ink);transform:scale(1.05)}
 
 .lightbox-stage{position:relative;display:flex;align-items:center;justify-content:space-between;flex:1;max-width:1200px;width:100%;margin:0 auto;padding:.5rem 0}
@@ -228,7 +229,10 @@ footer p{margin:.35rem 0}
 @keyframes lbZoom{from{transform:scale(.94);opacity:.7}to{transform:scale(1);opacity:1}}
 .lightbox-caption{color:#dccdc6;font-size:14px;margin-top:.75rem;text-align:center;font-weight:500;width:100%;max-width:50ch;overflow-wrap:anywhere}
 
-.lightbox-nav{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:32px;line-height:1;width:50px;height:50px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s ease,transform .15s ease;user-select:none;flex-shrink:0;z-index:2}
+.lightbox-nav{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);color:#fff;font-family:inherit;width:50px;height:50px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s ease,transform .15s ease;user-select:none;flex-shrink:0;z-index:2}
+/* Real icons, not ‹ › text glyphs: an SVG centres on its own viewBox instead
+   of on the line box, which is why the old characters sat high and thin. */
+.lightbox-nav svg{width:22px;height:22px;flex:none}
 .lightbox-nav:hover{background:var(--sun);color:var(--ink);transform:scale(1.08)}
 
 .lightbox-rail{display:flex;justify-content:center;gap:.6rem;max-width:1200px;width:100%;margin:0 auto;padding-top:.5rem;overflow-x:auto}
@@ -242,7 +246,8 @@ footer p{margin:.35rem 0}
   .lightbox-stage{padding:0;justify-content:center}
   /* Arrows float over the photo. Side by side they stole ~80px, which pushed
      "next" past the right edge of a 390px screen. */
-  .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;font-size:26px;background:rgba(0,0,0,.45);border-color:rgba(0,0,0,.35)}
+  .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;background:rgba(0,0,0,.45);border-color:rgba(0,0,0,.35)}
+  .lightbox-nav svg{width:18px;height:18px}
   .lightbox-nav.is-prev{left:.15rem}
   .lightbox-nav.is-next{right:.15rem}
   .lightbox-nav:hover{transform:translateY(-50%) scale(1.08)}
