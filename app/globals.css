@@ -334,14 +334,21 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
 .co-line{display:grid;grid-template-columns:56px 1fr;gap:.75rem;align-items:start}
 .co-line img{width:56px;height:70px;object-fit:cover;border-radius:.4rem;border:1px solid var(--line)}
 .co-line-name{margin:0;font-weight:600;font-size:13px}
-.co-line-price{margin:.15rem 0 0;font-size:13px;color:var(--leaf)}
-/* quantity as a pill — the same shape vocabulary the buttons own */
-.co-qty-pill{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:.05rem .5rem;font-size:12px;font-weight:600;color:var(--leaf)}
-/* subtotal / delivery / total — receipt-grade: tabular numerals aligned,
+.co-line-price{margin:.15rem 0 0;font-size:13px;color:var(--leaf);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+/* The count is correctable here now, so it is a control rather than a pill:
+   the same .qty component the product page uses — same 44px targets, same
+   hover, same disabled state — in the summary card's round-cornered register. */
+.co-qty{border-radius:999px}
+.co-qty output{font-size:13px}
+/* delivery / total — receipt-grade: tabular numerals aligned,
    plum-tinted rules instead of beige (beige-on-white read as unprofessional) */
 .co-totals{display:grid;gap:.35rem;margin:0;border-top:1px solid rgba(74,47,54,.16);padding-top:.7rem;font-size:14px;font-variant-numeric:tabular-nums}
 .co-totals>div{display:flex;justify-content:space-between;gap:1rem}
 .co-totals dt,.co-totals dd{margin:0}
+/* Labels never break mid-label; the amount wraps instead, so the tabular column
+   stays aligned at 768px where the summary is 285px wide. */
+.co-totals dt{white-space:nowrap}
+.co-totals dd{text-align:right}
 .co-delivery{color:var(--leaf);font-size:13px}
 /* the one saturated moment besides the CTA: a sun dot + display-face amount */
 .co-total{font-weight:700;font-size:16px;padding-top:.5rem;border-top:1px solid rgba(74,47,54,.13)}

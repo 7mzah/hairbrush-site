@@ -125,6 +125,25 @@ export default function OrderForm({ productName, image, price, currency }) {
   };
 
   const total = (Number(qty) || 1) * price;
+  // The count can be corrected here rather than by backing out of checkout, and
+  // the URL is rewritten to match: ?qty=N is where this state comes from on
+  // mount, so without the rewrite a refresh (or a phone call mid-checkout)
+  // silently reverted the order to whatever the product page had sent.
+  // replaceState, not pushState — the back button must still leave the checkout.
+  const setQtyAndUrl = (next) => {
+    const n = Math.min(10, Math.max(1, next));
+    setQty(n);
+    const url = new URL(window.location.href);
+    url.searchParams.set("qty", String(n));
+    window.history.replaceState(window.history.state, "", url);
+  };
+  const qtyStepper = (
+    <span className="qty co-qty" role="group" aria-label="Quantity">
+      <button type="button" aria-label="Decrease quantity" disabled={qty <= 1} onClick={() => setQtyAndUrl(qty - 1)}>−</button>
+      <output aria-live="polite">{qty}</output>
+      <button type="button" aria-label="Increase quantity" disabled={qty >= 10} onClick={() => setQtyAndUrl(qty + 1)}>+</button>
+    </span>
+  );
   const buyButton = (
     <button className="btn co-buy" disabled={state.status === "sending"}>
       <span className="cta-main">{state.status === "sending" ? "Confirming…" : "Confirm order"}</span>
@@ -264,22 +283,26 @@ export default function OrderForm({ productName, image, price, currency }) {
             <img src={image} alt="" width="900" height="1125" loading="lazy" />
             <div className="co-line-info">
               <p className="co-line-name">{productName}</p>
-              {/* the quantity is chosen on the product page and carried as
-                  ?qty=N — no stepper here, the count shows in the price line */}
               <p className="co-line-price">
-                {money(price, currency)} <span className="co-qty-pill">× {qty}</span>
+                {money(price, currency)}
+                {qtyStepper}
               </p>
               <input type="hidden" name="qty" value={qty} />
             </div>
           </div>
           <dl className="co-totals">
-            <div><dt>Subtotal</dt><dd>{money(total, currency)}</dd></div>
-            <div className="co-delivery"><dt>Delivery</dt><dd>Told when we call</dd></div>
+            {/* Two rows, one figure. This used to read Subtotal / Delivery /
+                Product total, where the first and last were the same number in
+                adjacent rows and the button printed it again — three statements
+                of one figure, none of which explained the thing the buyer is
+                trying to establish. The delivery price is the one honest
+                unknown; name it once and state what is actually owed. */}
+            <div className="co-delivery"><dt>Delivery</dt><dd>Price confirmed on the call — delivers across Lebanon</dd></div>
             {/* "Total" promised a delivered price the site cannot quote yet —
                 on a price-sensitive COD page the delivery cost is the number
                 the buyer is actually trying to establish. Name what this
                 number is, and say what is still missing. */}
-            <div className="co-total"><dt>Product total</dt><dd>{money(total, currency)} <span className="co-plus">+ delivery</span></dd></div>
+            <div className="co-total"><dt>Pay on delivery</dt><dd>{money(total, currency)} <span className="co-plus">+ delivery</span></dd></div>
           </dl>
           {/* desktop: the button lives in the summary, like Shopify's Pay now */}
           <div className="co-buy-desktop">{buyButton}</div>
@@ -310,6 +333,10 @@ export default function OrderForm({ productName, image, price, currency }) {
               onChange={() => fieldErr.phone && setFieldErr((e) => ({ ...e, phone: undefined }))}
             />
             {fieldErr.phone && <span className="field-err" id="phone-err" role="alert">{fieldErr.phone}</span>}
+            {/* A COD checkout asks for a phone number and a home address and
+                currently says nothing about what happens to them. One line, at
+                the field, answering the question the buyer is actually asking. */}
+            <span className="field-hint">We use your number only to confirm and deliver this order.</span>
           </label>
         </section>
         <section className="co-section">
