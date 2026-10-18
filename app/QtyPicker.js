@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { markFromProduct } from "@/lib/navState";
 
 const clamp = (n) => Math.min(10, Math.max(1, Number(n) || 1));
 
@@ -49,13 +50,13 @@ export default function QtyPicker() {
           +
         </button>
       </div>
-      <Link className="btn" href={`/order?qty=${qty}`} ref={ctaRef}>
+      <Link className="btn" href={`/order?qty=${qty}`} ref={ctaRef} onClick={markFromProduct}>
         Order now
       </Link>
       {/* Same destination as the button above; hidden from tab order and
           assistive tech until it is actually on screen. */}
       <div className={`sticky-cta${barOn ? " is-on" : ""}`} aria-hidden={!barOn}>
-        <Link className="btn" href={`/order?qty=${qty}`} tabIndex={barOn ? 0 : -1}>
+        <Link className="btn" href={`/order?qty=${qty}`} tabIndex={barOn ? 0 : -1} onClick={markFromProduct}>
           Order now
         </Link>
       </div>

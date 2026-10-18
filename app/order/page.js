@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { PRODUCT, CONTACT } from "@/lib/config";
+import BackToProduct from "./BackToProduct";
 import OrderForm from "../OrderForm";
 
 // The checkout is kept out of the sitemap on purpose: this single-product
@@ -22,24 +22,9 @@ export default function OrderPage() {
       {/* The one way back to the product page. This used to be a text link here
           plus a copy at the foot of the order summary under a different name
           ("Return to product") — the summary copy is gone, so this is now the
-          single exit at every width.
-          The chevron is the same authored polyline the lightbox ships (stroke
-          2.4) rather than an "←" glyph: the craft floor refuses Unicode standing
-          in for an icon system, and the site already has one drawn set. */}
-      <Link href="/" className="backlink">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <polyline points="15 5 8 12 15 19" />
-        </svg>
-        Back to product
-      </Link>
+          single exit at every width. BackToProduct owns the click, so the exit
+          follows browser history rather than stacking a second checkout. */}
+      <BackToProduct />
       <h1>Complete your order</h1>
 
       <OrderForm
