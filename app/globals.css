@@ -217,8 +217,23 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
    its children sit inside this card-width column already */
 .orderpage>*{max-width:none;margin-inline:0;padding:0}
 .orderpage h1{font-size:22px;line-height:1.25;margin:.35rem 0 0}
-.backlink{display:inline-block;font-size:13px;font-weight:600;color:var(--leaf);text-decoration:none}
-.backlink:hover{text-decoration:underline}
+/* The way back to the product page — one control, both call sites. A pill
+   because it is a small control (craft floor), now carrying a real 44px target
+   where the old rule was a ~20px-tall text link, and both labels are "Back to
+   product": two names for one destination read as two different exits.
+   Interaction is authored rather than left at the default underline — the
+   chevron steps left on hover and the surface answers, so the control reads as
+   pressable before it is pressed. */
+.backlink{display:inline-flex;align-items:center;gap:.45rem;min-height:44px;margin:0 0 1rem;padding:.5rem 1.05rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--leaf);font-size:13px;font-weight:600;text-decoration:none;transition:background-color 160ms ease,border-color 160ms ease,transform 160ms var(--ease-out)}
+.backlink svg{width:16px;height:16px;flex:none;transition:transform 180ms var(--ease-out)}
+/* press feedback on the same 160ms beat as .btn, .thumb and the stepper */
+.backlink:active{transform:scale(.97)}
+/* hover only where a hover exists — touch devices keep the resting state and
+   the arrow never moves under a finger that cannot leave it */
+@media(hover:hover) and (pointer:fine){
+  .backlink:hover{background:var(--bg);border-color:var(--leaf)}
+  .backlink:hover svg{transform:translateX(-3px)}
+}
 .checkout{display:grid;gap:1rem;margin-top:1rem}
 .checkout>p{margin:0}
 /* Elevation is shadow-only: a beige 1.5px outline on white over the beige
@@ -269,10 +284,17 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
    a closing hairline inside the summary card at every breakpoint. */
 .co-summary>.co-note,.co-summary>.co-return{margin-inline:1rem}
 .co-summary>.co-note:first-of-type{margin-top:.85rem;padding-top:.85rem;border-top:1px solid rgba(74,47,54,.13)}
-.co-summary>.co-return{margin-bottom:.85rem}
+/* Below 768px the summary is a closed accordion at the top of the page while
+   the CTA sits at the foot of the form, so the escape hatch belongs beside the
+   button: the summary's copy is suppressed there and the one inside
+   .co-buy-mobile takes over. The same swap the buy button itself makes — one
+   copy on screen at every width. */
+.co-summary>.co-return{display:none}
 .co-note{margin:0;font-size:12px;color:var(--leaf);text-align:center}
-.co-return{display:block;text-align:center;font-size:13px;font-weight:600;color:var(--leaf);text-decoration:none;padding:.2rem 0 .25rem}
-.co-return:hover{text-decoration:underline}
+/* in the summary it is the quieter of two actions: Confirm order is the filled
+   primary above it, so this one runs the card's full width as a bordered
+   secondary instead of floating as centred text */
+.co-return{display:flex;justify-content:center}
 /* one card holds both form sections, split by a hairline — not two
    identical boxes (the template tell the design brief warns against) */
 .co-main{display:grid;gap:1rem;align-content:start}
@@ -305,9 +327,10 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
   .co-sum-toggle{display:none}
   .co-sum-body{display:grid}
   .co-buy-desktop{display:block}
+  .co-summary>.co-return{display:flex;margin-top:.85rem;margin-bottom:.85rem}
 }
 @media(max-width:767px){
-  .co-buy-mobile{display:block}
+  .co-buy-mobile{display:grid;gap:.7rem}
   .row-eq2{grid-template-columns:1fr}
 }
 
@@ -396,7 +419,7 @@ footer p{margin:.35rem 0}
      actually renders one (product page); /order has no .sticky-cta element */
   body:has(.sticky-cta.is-on){padding-bottom:calc(64px + env(safe-area-inset-bottom))}
 }
-@media(prefers-reduced-motion:reduce){.sticky-cta{transition:none}}
+@media(prefers-reduced-motion:reduce){.sticky-cta{transition:none}.backlink,.backlink svg{transition:none}.backlink:hover svg,.backlink:active{transform:none}}
 
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.acc summary::after{transition:none}}
 

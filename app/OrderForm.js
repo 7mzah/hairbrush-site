@@ -4,6 +4,7 @@ import Link from "next/link";
 import AREAS from "@/lib/areas.json";
 import { norm } from "@/lib/norm";
 import Combobox from "./Combobox";
+import BackLink from "./BackLink";
 
 // Two decimals throughout the checkout, the way Shopify prints prices.
 const money = (n, c) =>
@@ -290,7 +291,10 @@ export default function OrderForm({ productName, image, price, currency }) {
             they were invisible right at the moment of commitment. */}
         <p className="co-note">We will call you to confirm your order.</p>
         <p className="co-note">✓ Cash on delivery — you pay when the brush is in your hands.</p>
-        <Link className="co-return" href="/">← Return to product</Link>
+        {/* same control as the top of the page — one label, one look, one
+            destination; here it sits under Confirm order as the quieter of the
+            summary's two actions */}
+        <BackLink className="co-return" />
       </aside>
 
       <div className="co-main">
@@ -398,7 +402,13 @@ export default function OrderForm({ productName, image, price, currency }) {
         </div>
         {/* mobile: the button sits at the bottom of the form, outside the
             collapsed accordion (the desktop copy above is hidden there) */}
-        <div className="co-buy-mobile">{buyButton}</div>
+        <div className="co-buy-mobile">
+          {buyButton}
+          {/* the way back rides with the button, because on a phone this is
+              where the commitment happens — the summary's copy is far above at
+              the top of the page (see .co-summary>.co-return) */}
+          <BackLink className="co-return" />
+        </div>
       </div>
       <p role="status" aria-live="polite" className={state.status}>{state.msg}</p>
     </form>

@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { PRODUCT, CONTACT } from "@/lib/config";
 import OrderForm from "../OrderForm";
+import BackLink from "../BackLink";
 
 // The checkout is kept out of the sitemap on purpose: this single-product
 // store's canonical page is the product page, and /order is the step after
@@ -19,7 +19,7 @@ export default function OrderPage() {
     // anonymous landmark is worse) — also the flex child that pins the
     // footer to the bottom of short viewports.
     <main className="orderpage">
-      <Link href="/" className="backlink">← Back to product</Link>
+      <BackLink />
       <h1>Complete your order</h1>
 
       <OrderForm
