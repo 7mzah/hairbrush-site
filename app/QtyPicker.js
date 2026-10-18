@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { markFromProduct } from "@/lib/navState";
 
 const clamp = (n) => Math.min(10, Math.max(1, Number(n) || 1));
@@ -50,15 +49,27 @@ export default function QtyPicker() {
           +
         </button>
       </div>
-      <Link className="btn" href={`/order?qty=${qty}`} ref={ctaRef} onClick={markFromProduct}>
+      {/* A real navigation, not next/link — deliberate, don't convert it back.
+          The browser must create the checkout's history entry itself, in
+          response to this click. A client-side navigation creates that entry
+          with a scripted pushState instead, and browsers record an early
+          scripted push as a replacement rather than an addition: Chromium
+          within 5s of the load event, Firefox before it, and Safari once the
+          click's activation has lapsed — which a slow connection guarantees,
+          since the router waits for the checkout's data while the page is
+          still loading. The product page then loses its entry, and the
+          browser's back button skips straight past it, out of the store. A
+          document load always pushes an entry. */}
+      <a className="btn" href={`/order?qty=${qty}`} ref={ctaRef} onClick={markFromProduct}>
         Order now
-      </Link>
-      {/* Same destination as the button above; hidden from tab order and
-          assistive tech until it is actually on screen. */}
+      </a>
+      {/* Same destination and same real-navigation reason as the button above;
+          hidden from tab order and assistive tech until it is actually on
+          screen. */}
       <div className={`sticky-cta${barOn ? " is-on" : ""}`} aria-hidden={!barOn}>
-        <Link className="btn" href={`/order?qty=${qty}`} tabIndex={barOn ? 0 : -1} onClick={markFromProduct}>
+        <a className="btn" href={`/order?qty=${qty}`} tabIndex={barOn ? 0 : -1} onClick={markFromProduct}>
           Order now
-        </Link>
+        </a>
       </div>
     </div>
   );
