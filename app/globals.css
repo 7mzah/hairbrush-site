@@ -67,7 +67,14 @@ main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
    into the browser's back-swipe navigation */
 .strip{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
 .strip::-webkit-scrollbar{display:none}
-.strip figure{margin:0;flex:0 0 100%;height:100%;scroll-snap-align:start}
+/* scroll-snap-stop:always traps an inertial swipe at the first snap position it
+   reaches, so one flick moves one photo. The default (normal) lets a flick
+   "pass over" snap positions — a hard swipe ran through two or three shots at a
+   time. It does not affect the dot/rail scrollTo() navigation, which the spec
+   lists among the operations that do not pass over snap positions (verified:
+   dot 1 -> 5 still lands in one jump). Inert above 640px, where the media query
+   below turns snapping off entirely. */
+.strip figure{margin:0;flex:0 0 100%;height:100%;scroll-snap-align:start;scroll-snap-stop:always}
 .strip img{width:100%;height:100%;object-fit:cover;display:block}
 @media(min-width:640px){.strip{overflow:hidden;scroll-snap-type:none}}
 .dots{position:absolute;left:0;right:0;bottom:2px;display:flex;justify-content:center;gap:0}
