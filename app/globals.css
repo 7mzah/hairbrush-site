@@ -18,13 +18,10 @@ h1{font-family:var(--f-head);font-size:clamp(1.375rem,2.2vw,1.625rem);font-weigh
    .done-panel) resets this itself — this margin is just the default for any
    future bare heading. */
 h2{font-family:var(--f-head);font-size:19px;font-weight:600;margin-top:1.25rem}
-/* 1440, not 1280: at 1280 the three desktop columns had to share 1232px, and the
-   300px buy box plus two 40px gaps left the media column 383px — a 315px hero
-   photo on a 1440 screen, with 104px of bare background beside it. The extra
-   160px makes that photo 387px and takes the empty margin down to 24px, and at
-   1329 (where the old cap began to bind) the photo goes 279px to 337px. The
-   container is still capped, so nothing stretches on a 1920 display.
-   Nothing narrower than 1329px changes at all. */
+/* 1440, not 1280: this cap is what stops the row stretching on a wide display.
+   The three columns reach their final shape at about 1440 — by then the copy
+   column has absorbed the spare width — and past it the extra screen width
+   becomes margin: 264px each side on a 1920 display. */
 main>*{max-width:1440px;margin-inline:auto;padding:0 1.5rem}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px;box-shadow:0 0 0 5px var(--leaf)}
 summary:hover{color:var(--leaf)}
@@ -46,26 +43,63 @@ header.site{max-width:none;margin:0;padding:0;background:var(--paper);border-bot
 /* 20px top / 24px bottom: the header is only 61px tall, so a 24px top pad plus
    the grid gap was stacking up. The bottom pad is the break before the footer. */
 main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
-/* 20px between stacked blocks below 1200px. 2rem read as generous at phone width
+/* 20px between stacked blocks below 640px. 2rem read as generous at phone width
    — it was producing 40-76px runs between title, image, order box and rows. */
 .product{display:grid;gap:1.25rem;align-items:start}
-/* Three columns need ~1200px to breathe: at 1024 the fixed 300px buy box left
-   the title a 316px column and the 140-character title ran to six lines with
-   two tall empty blocks beneath the photo and the buy box. */
-@media(min-width:1200px){.product{grid-template-columns:minmax(280px,.9fr) minmax(0,1.1fr) 300px;gap:2.5rem}}
-/* Tablet band (landscape phone through iPad Pro landscape). Two columns, but a
-   different pair from the old layout: the title takes the full width instead of
-   being squeezed into half of it, and the photo shares its row with the buy box
-   — the two things a buyer is actually comparing. The grid is capped at 900px
-   so the 4:5 photo cannot grow taller than the viewport it is read in.
+/* The photo and the card, wrapped together so the card has a row of its own to
+   stick within (see the comment in page.js). Below 768px the wrapper is just a
+   stacked column, same as .product above; from 768px it becomes the two-column
+   row; from 1200px it dissolves again so its children can take their own
+   columns. */
+.buyrow{display:grid;gap:1.25rem;align-items:start}
+/* From 1200px there is room for three columns with the title across the top: the
+   photo, the copy in a column of its own (300px floor, under which the bullets
+   wrap every third word), and the 300px buy box.
+   This replaces the old middle column that carried the title *and* the copy.
+   Sharing 1152-1439px between those two left the title 425px at 1200 — five
+   lines for a 140-character name — and the photo 277px, while the band below
+   gave the same photo 546px and the title two lines. Spanning the title hands
+   its width to the photo and the copy, which has a far narrower job, and the
+   copy then absorbs whatever width is left over at any size. */
+@media(min-width:1200px){
+  .product{grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr) 300px;gap:2.5rem}
+  /* The Gallery is first in the DOM, so without this the title would be pushed
+     into row 2 and the page would open on the photo instead of the product. */
+  .titleblock{grid-column:1/-1;grid-row:1;order:-1}
+  /* .buyrow opens up again here — the photo and the card go back to being
+     separate columns of the one wide row, with the copy between them. Placement
+     is explicit because the flattened order is photo, card, title, copy, which
+     would otherwise put the card in the copy's column. */
+  .buyrow{display:contents}
+  .media{grid-column:1;grid-row:2}
+  .copyblock{grid-column:2;grid-row:2}
+  .buybox{grid-column:3;grid-row:2}
+}
+/* The two-column band: tablet through a 1199px window. The title takes the full
+   width instead of being squeezed into half of it, and the photo shares its row
+   with the buy box — the two things a buyer is actually comparing.
+   It starts at 768px, not 640px. At 640px the band had 592px to divide and the
+   card's 260px floor left the hero 240px wide — narrower than the card beside it,
+   and less than half the 591px the same hero had one pixel below the breakpoint
+   at 639px. 768px is where the row can hold both: a 368px hero and the card.
+   No width cap either. There used to be one (a flat 900px, then a height-derived
+   802 to 1186px) on the reasoning that a 4:5 photo should not grow taller than
+   the window it is read in. That reasoning cost more than it bought: the cap held
+   the grid narrower than the screen it sat in — at 1199px it stranded 174px of
+   bare background on each side, and at 1319x700 the height-derived version still
+   stranded 259px — while the thing it was protecting, the buy box, sits beside
+   the photo's TOP either way and so stays above the fold whatever the photo's
+   height. The photo is simply allowed to fill its column now; the page scrolls.
    The split is 62/38, not the old 55/45: a buy box is a card of the same few
    controls at every width, so at 373px it was mostly empty margin while the
    hero next to it was 387px. Handing those pixels to the photo costs the card
-   nothing — the same row now yields a 449px photo and a 311px card, and the
-   260px floor keeps the quantity stepper on one line at the 640px end. */
-@media(min-width:640px) and (max-width:1199px){
-  .product{max-width:900px;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:1.5rem}
-  .titleblock,.copyblock{grid-column:1/-1}
+   nothing. Past ~900px the 37.5% share is wider than the card can use, so the
+   card is sized to its content (capped at 340px) and pinned to the right edge,
+   where it lines up with the header and footer. */
+@media(min-width:768px) and (max-width:1199px){
+  .product{grid-template-columns:minmax(0,1fr);gap:1.25rem}
+  .buyrow{grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:1.5rem}
+  .buybox{max-width:340px;justify-self:end}
 }
 
 .media{display:grid;gap:.75rem;align-content:start}
@@ -108,35 +142,55 @@ main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
 .thumb.is-active{border-color:var(--leaf);box-shadow:0 0 0 2px var(--sun)}
 
 /* ---- info column ---- */
-.panel{display:grid;align-content:start}
-/* Below 1200px .panel stops being a grid so its two blocks can reorder inside
-   .product: title (h1) -> image -> buy box -> fact rows. Desktop (>=1200px) is
-   untouched. */
-@media(max-width:1199px){.panel{display:contents}.titleblock{order:1}.media{order:2}.buybox{order:3}.copyblock{order:4}}
+/* The wrapper is transparent: .titleblock and .copyblock are placed as items of
+   .product itself, so the title can span the row while the copy keeps a column.
+   That is the shape at every width — at phone width the two simply stack in the
+   title -> copy order below the photo. */
+.panel{display:contents}
+/* Below the third column those items reorder: title (h1) -> image -> buy box ->
+   fact rows. Above it, the title is pulled to the front by its own order rule so
+   the page still opens on the product name rather than the photo. */
+@media(max-width:1199px){.titleblock{order:1}.buyrow{order:2}.copyblock{order:3}}
 /* The lede sits directly under the h1 now, and the global .5rem bottom margin
    — set back when the byline was there — leaves only 8px under a 26px heading. */
 .titleblock h1{margin-bottom:1rem}
 .byline{font-size:13px;color:var(--muted);margin:0 0 .5rem}
 .byline span{color:var(--leaf);font-weight:600}
 /* The break between the price block and the first rule. .price's own 1rem margin
-   adds to this rather than collapsing — .panel is a grid above 1199px and a
-   contents reset below it — so the measured gap is 36px, not 20px. */
+   adds to this rather than collapsing — .panel is a contents reset, so both are
+   grid items — and the measured gap is 36px, not 20px. */
 .acc{margin-top:1.25rem}
 .lede{font-size:15px;line-height:1.5;margin:0 0 .75rem;max-width:62ch}
 .price{margin:0 0 1rem;font-size:30px;font-weight:500;display:flex;align-items:flex-start;gap:1px;line-height:1.1;color:var(--ink)}
 .price .cur{font-size:15px;position:relative;top:5px}
 /* .price base is the info-column treatment (30px); .buybox .price overrides it.
-   Hidden below 1200px — that is where the buy box leaves room for a second
-   price without it reading as a duplicate. */
-.titleblock .price{display:none}
-@media(min-width:1200px){.titleblock .price{display:flex}}
+   The title block no longer prints a price at all: at >=1200px the buy box sits
+   in the same row as the title, so a second figure 117px below it was the same
+   number stated twice in one viewport at two sizes. */
 .bullets{list-style:none;margin:0;padding:0;display:grid;gap:.7rem}
 .bullets li{position:relative;padding-left:1.15rem;font-size:15px;line-height:1.5}
 .bullets li::before{content:"";position:absolute;left:0;top:.6em;width:5px;height:5px;border-radius:50%;background:var(--sun)}
 .bullets b{font-weight:700}
+/* From 1200px the copy has a column of its own (~300-440px), so the list is
+   already at a readable measure. In the band the copy spans the full row
+   instead, where one column of 15px text would run past 100 characters a line,
+   so it splits in two. The lede above it stays a single 62ch paragraph. */
+@media(min-width:640px) and (max-width:1199px){
+  .bullets{display:block;columns:2;column-gap:2.5rem}
+  .bullets li{margin-bottom:.7rem;break-inside:avoid}
+}
 
 /* ---- buy box ---- */
 .buybox{background:var(--paper);border:0;border-radius:1rem 1rem 4rem 1rem;padding:20px;font-size:14px;margin-top:.5rem;box-shadow:var(--lift)}
+/* From 768px the buy box shares a row with the photo, and the photo is much the
+   taller of the two — 793px against a 300px card at 1199px. Rather than leave
+   that half of the row blank, the card follows the photo down: it sticks to the
+   top of the viewport and travels with the row, so the price and the button stay
+   beside whatever part of the image is on screen. It stops at the end of the
+   row. That is what the .buyrow wrapper is for — with the card as a direct child
+   of .product its containing block was the whole grid, and it slid over the copy
+   below by as much as 256px. */
+@media(min-width:768px){.buybox{position:sticky;top:1rem}}
 .buybox .price{font-size:24px;margin-bottom:.75rem}
 .buybox .price .cur{font-size:12px;top:3px}
 /* Availability reads as part of the price rather than as a third form label:
@@ -403,7 +457,7 @@ footer p{margin:.35rem 0}
 /* ---- phone tuning: touch targets, iOS focus-zoom, vertical budget ---- */
 /* 18px/1.3 keeps the 21-word title light instead of bulky (Bricolage only ships
    600/800, so the weight cannot come down without loading another cut). */
-@media(max-width:639px){.shot{aspect-ratio:1/1}h1{font-size:18px;line-height:1.3}}
+@media(max-width:639px){.shot{aspect-ratio:1/1}h1{font-size:20px;line-height:1.3}}
 /* iOS — and iPadOS — auto-zoom a focused field under 16px, so the field size
    follows the touch band rather than the phone breakpoint alone; 16px also
    lifts the box to ~46px. */
@@ -412,13 +466,15 @@ footer p{margin:.35rem 0}
   .btn{padding:.75rem 1.4rem}
   .buybox{padding:16px}
 }
-/* ---- sticky buy bar (phones only) ----
-   The buy box sits ~800px down a 844px-tall phone, so once it scrolls away
-   the only CTA is far above the thumb. This bar takes over only after the
-   real CTA leaves the viewport (QtyPicker toggles .is-on), so it never
-   competes with the buy box itself. Hidden entirely at >=641px. */
+/* ---- sticky buy bar (phases where the card is not beside the photo) ----
+   Below 768px the photo and the buy box are stacked, so the card sits ~650-810px
+   down a phone and the only CTA is far above the thumb once it scrolls away. This
+   bar takes over only after the real CTA leaves the viewport (QtyPicker toggles
+   .is-on), so it never competes with the buy box itself. The bar's window matches
+   the stacked layout: from 768px the card shares the photo's row and sticks, so
+   the bar is hidden entirely. */
 .sticky-cta{display:none}
-@media(max-width:640px){
+@media(max-width:767px){
   .sticky-cta{display:block;position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--paper);border-top:1px solid var(--line);padding:.6rem 1rem calc(.6rem + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(36,22,26,.12);transform:translateY(110%);transition:transform .22s var(--ease-out)}
   /* asymmetric: appearing is ease-out (responsive, the CTA arrives to meet
      the thumb), leaving is a faster ease-in (the system getting out of the

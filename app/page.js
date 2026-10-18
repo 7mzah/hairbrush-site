@@ -68,20 +68,65 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
 
       <section className="product">
-        <Gallery photos={PHOTOS} />
+        {/* The photo and the buy box travel together. They share a row from
+            768px up, and the card sticks to the viewport top while the much
+            taller photo scrolls past it — so this wrapper is what the card is
+            allowed to travel within. Without it the card's sticky containing
+            block is .product itself, and it slides over the copy below (measured
+            at up to 256px of overlap at 640-767px). Keep them wrapped. */}
+        <div className="buyrow">
+          <Gallery photos={PHOTOS} />
+
+          <div id="order" className="buybox" tabIndex={-1}>
+            <p className="price">
+              <span className="cur">{currency}</span>
+              {price.toFixed(2)}
+            </p>
+            {/* Availability sits with the price, where the shopper asks it. Stated
+                in words and the brand's own confirmation tone: amber is spent on
+                the one primary action below, so a borrowed "in stock" green (or a
+                second amber mark) would pull attention off the CTA. Matches the
+                offer's schema.org `InStock` availability. */}
+            <p className="stock">In Stock</p>
+            <QtyPicker />
+            {/* The reassurances directly under the CTA. Plain <details> like the
+                .acc rows, so this page stays a server component; <summary> holds
+                an <h2> so heading navigation survives (same reasoning as the .acc
+                rows above). Ships open: "cash on delivery" is the answer to the
+                single biggest COD objection and it was the one line a shopper had
+                to un-hide to find. */}
+            <details className="bb-more" open>
+              <summary>
+                <h2>Returns, gift options &amp; payment</h2>
+              </summary>
+              <dl className="bb-rows">
+                <div>
+                  <dt>Returns</dt>
+                  <dd>7-day replacement on defective items</dd>
+                </div>
+                <div>
+                  <dt>Gift options</dt>
+                  <dd>Available at checkout</dd>
+                </div>
+                <div>
+                  <dt>Payment</dt>
+                  <dd>Cash on delivery</dd>
+                </div>
+              </dl>
+            </details>
+          </div>
+        </div>
 
         <div className="panel">
           <div className="titleblock">
             {/* Derived from lib/config: the h1 and PRODUCT.name can no longer
                 drift apart the way they did when this was hardcoded. */}
             <h1>{name}</h1>
-            {/* Desktop only (>=1000px). The buy box already carries $7.00 and on
-                narrower screens it sits right under the title, so a second price
-                there is noise rather than information. */}
-            <p className="price">
-              <span className="cur">{currency}</span>
-              {price.toFixed(2)}
-            </p>
+            {/* No price here. It used to reappear at >=1200px on the theory that
+                the third column put the buy box "a screen away" from the title;
+                measured at 1200x900 the two were 117px apart, both above the
+                fold, at two different sizes — one number stated twice in a single
+                viewport. The card carries it. */}
           </div>
 
           <div className="copyblock">
@@ -152,43 +197,6 @@ export default function Home() {
               </details>
             </div>
           </div>
-        </div>
-
-        <div id="order" className="buybox" tabIndex={-1}>
-          <p className="price">
-            <span className="cur">{currency}</span>
-            {price.toFixed(2)}
-          </p>
-          {/* Availability sits with the price, where the shopper asks it. Stated
-              in words and the brand's own confirmation tone: amber is spent on
-              the one primary action below, so a borrowed "in stock" green (or a
-              second amber mark) would pull attention off the CTA. Matches the
-              offer's schema.org `InStock` availability. */}
-          <p className="stock">In Stock</p>
-          <QtyPicker />
-          {/* The reassurances directly under the CTA, closed by default. Plain
-              <details> like the .acc rows, so this page stays a server
-              component; <summary> holds an <h2> so heading navigation survives
-              (same reasoning as the .acc rows above). */}
-          <details className="bb-more">
-            <summary>
-              <h2>Returns, gift options &amp; payment</h2>
-            </summary>
-            <dl className="bb-rows">
-              <div>
-                <dt>Returns</dt>
-                <dd>7-day replacement on defective items</dd>
-              </div>
-              <div>
-                <dt>Gift options</dt>
-                <dd>Available at checkout</dd>
-              </div>
-              <div>
-                <dt>Payment</dt>
-                <dd>Cash on delivery</dd>
-              </div>
-            </dl>
-          </details>
         </div>
       </section>
 
