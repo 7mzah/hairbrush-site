@@ -161,10 +161,12 @@ being collected.
 - No fabricated social proof of any kind.
 - No performance statistics without a supplier test. The "cutting blow-drying
   time by up to 45%" line was rejected 2026-10-18 on these grounds.
-- No material or temperature claims beyond the supplier spec sheet. "100%
-  natural boar", "248°F (120°C)" and "coffee-ground bio-composite" were all
-  rejected 2026-10-18; the documented terms are "Ball-tipped nylon pins with
-  boar bristles", "Coffee Material + ABS" and "Waterproof body".
+- No material claims beyond the supplier spec sheet. "100% natural boar" and
+  "coffee-ground bio-composite" were rejected 2026-10-18; the documented terms
+  are "Ball-tipped nylon pins with boar bristles" and "Coffee Material + ABS".
+- No temperature figures. The resistance row reads "Waterproof and heat
+  resistant body" — qualitative on purpose. A figure such as "248°F (120°C)"
+  stays rejected until the supplier publishes a rating.
 - No delivery price until Wakilni quotes it (`lib/config.js` → `DELIVERY`).
 - No contact details until a number exists (`lib/config.js` → `CONTACT`).
 - Verification is `npm run build` only. No lint, test, or typecheck exists.
@@ -195,6 +197,10 @@ being collected.
   "micro-circulation" claims); spec table gains "Hair compatibility" and
   relabels the resistance row; audience flag filled from the owner's launch
   hypothesis; recorded that the order form has moved off the inline buy box.
+  Later the same day the resistance row was reworded to "Water & heat
+  resistance → Waterproof and heat resistant body" (owner's call: it was
+  inconsistent with its label), and the hard rule softened from "no heat
+  claims" to "no temperature figures".
 
 - v2 (2026-10-06) — Restructured into the skill's canonical section template; carried over product, differentiator, voice, hard rules and agreed copy direction; left audience, objections, customer language and proof as open flags rather than inventing them.
 - v1 (2026-10-06) — Initial context.

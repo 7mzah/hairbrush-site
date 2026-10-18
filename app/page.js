@@ -18,9 +18,9 @@ const PHOTOS = [
 // "Coffee Material + ABS" is the supplier's own term — keep it: an ABS body and
 // a plastic handle are the same claim stated twice, so the spec table does not
 // need to re-describe it.
-// The resistance row is LABELLED "Heat & water resistance" but its value stays
-// the supplier's documented "Waterproof body": there is no heat rating on the
-// spec sheet, so no temperature may be claimed here.
+// The resistance row states water + heat resistance. "Waterproof" is the
+// supplier's documented term; the heat side stays qualitative on purpose — the
+// spec sheet carries no heat rating, so no temperature figure is claimed.
 // Do not add Alibaba sales counts, store ratings or supplier reviews here —
 // those are the supplier's metrics, not ours.
 const DETAILS = [
@@ -28,7 +28,7 @@ const DETAILS = [
   ["Material", "Coffee Material + ABS"],
   ["Shape", "Curved, vented paddle"],
   ["Bristles", "Ball-tipped nylon pins with boar bristles"],
-  ["Heat & water resistance", "Waterproof body"],
+  ["Water & heat resistance", "Waterproof and heat resistant body"],
   ["Hair compatibility", "Straight, Wavy, Curly, Coily, Fine, Thick, Extensions & Wigs"],
 ];
 
