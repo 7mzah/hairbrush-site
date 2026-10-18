@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { maxDist, norm, osaDistance } from "@/lib/norm";
 
 const CAP = 60; // keep the popup short; the footer says how many are hidden
@@ -36,6 +36,45 @@ export default function Combobox({
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1); // index into `visible`, -1 = none
   const listRef = useRef(null);
+  const inputEl = useRef(null);
+  // A fixed 240px list under a field near the bottom edge is clipped — on a wide
+  // screen it ran into the footer, and on a phone the keyboard left ~20px of it
+  // visible. So the list measures the room it actually has: it flips above the
+  // field when there is more room there, and never grows past what is on screen.
+  // visualViewport, not innerHeight: only the former shrinks for the keyboard.
+  const [place, setPlace] = useState({ up: false, max: 240 });
+
+  function measure() {
+    const el = inputEl.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const vh = window.visualViewport?.height ?? window.innerHeight;
+    const below = vh - r.bottom - 8;
+    const above = r.top - 8;
+    // 200 is "most of a list": below that it is worth flipping above the field;
+    // above it, opening downward (a little shorter) keeps the expected direction.
+    const up = below < 200 && above > below;
+    // Never taller than the room it has (80 is the floor so a sliver of screen
+    // still shows a couple of scrollable rows); 240 is the resting height.
+    setPlace({ up, max: Math.max(80, Math.min(240, up ? above : below)) });
+  }
+
+  // Re-measure on every open, and again when the visual viewport resizes (the
+  // keyboard appearing/disappearing) so the popup is never half off-screen.
+  // Layout effect: the first paint after opening must already be in the right
+  // direction, otherwise the list flashes at last time's placement.
+  useLayoutEffect(() => {
+    if (!open) return;
+    measure();
+    const vv = window.visualViewport;
+    const onResize = () => measure();
+    window.addEventListener("resize", onResize);
+    vv?.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      vv?.removeEventListener("resize", onResize);
+    };
+  }, [open]);
 
   const q = norm(value);
   const { visible, exactCount, fuzzyTier } = useMemo(() => {
@@ -168,7 +207,10 @@ export default function Combobox({
         required={required}
         autoComplete={autoComplete}
         spellCheck={false}
-        ref={inputRef}
+        ref={(el) => {
+          inputEl.current = el;
+          if (inputRef) inputRef.current = el;
+        }}
       />
       {/* The message lives here, inside the field group, so the fix is where
           the mistake is — not in a detached status line far below. */}
@@ -184,10 +226,11 @@ export default function Combobox({
       )}
       {showList && (
         <ul
-          className="cb-list"
+          className={`cb-list${place.up ? " is-up" : ""}`}
           id={listId}
           role="listbox"
           aria-label={label}
+          style={{ maxHeight: place.max }}
           ref={listRef}
           /* clicking the list must not blur (and therefore close) the input */
           onMouseDown={(e) => e.preventDefault()}
