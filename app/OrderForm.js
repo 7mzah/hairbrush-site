@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import AREAS from "@/lib/areas.json";
+import { MAX_QTY } from "@/lib/config";
 import { norm } from "@/lib/norm";
 import Combobox from "./Combobox";
 
@@ -56,7 +57,7 @@ const resolveExact = (items, text) => {
   return hits.length === 1 ? hits[0] : null;
 };
 
-export default function OrderForm({ productName, image, price, currency }) {
+export default function OrderForm({ productName, image, price, currency, deliveryFee }) {
   const [qty, setQty] = useState(1);
   const [state, setState] = useState({ status: "idle", msg: "" });
   const [districtText, setDistrictText] = useState("");
@@ -80,7 +81,7 @@ export default function OrderForm({ productName, image, price, currency }) {
   // CSR bailout); the summary picks the number up a frame later.
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("qty");
-    setQty(Math.min(10, Math.max(1, Number(q) || 1)));
+    setQty(Math.min(MAX_QTY, Math.max(1, Number(q) || 1)));
   }, []);
 
   const selected =
@@ -131,7 +132,7 @@ export default function OrderForm({ productName, image, price, currency }) {
   // silently reverted the order to whatever the product page had sent.
   // replaceState, not pushState — the back button must still leave the checkout.
   const setQtyAndUrl = (next) => {
-    const n = Math.min(10, Math.max(1, next));
+    const n = Math.min(MAX_QTY, Math.max(1, next));
     setQty(n);
     const url = new URL(window.location.href);
     url.searchParams.set("qty", String(n));
@@ -141,7 +142,7 @@ export default function OrderForm({ productName, image, price, currency }) {
     <span className="qty co-qty" role="group" aria-label="Quantity">
       <button type="button" aria-label="Decrease quantity" disabled={qty <= 1} onClick={() => setQtyAndUrl(qty - 1)}>−</button>
       <output aria-live="polite">{qty}</output>
-      <button type="button" aria-label="Increase quantity" disabled={qty >= 10} onClick={() => setQtyAndUrl(qty + 1)}>+</button>
+      <button type="button" aria-label="Increase quantity" disabled={qty >= MAX_QTY} onClick={() => setQtyAndUrl(qty + 1)}>+</button>
     </span>
   );
   const buyButton = (
@@ -288,6 +289,7 @@ export default function OrderForm({ productName, image, price, currency }) {
                 {qtyStepper}
               </p>
               <input type="hidden" name="qty" value={qty} />
+              {qty >= MAX_QTY && <span className="field-hint">Maximum {MAX_QTY} per order.</span>}
             </div>
           </div>
           <dl className="co-totals">
@@ -297,7 +299,7 @@ export default function OrderForm({ productName, image, price, currency }) {
                 of one figure, none of which explained the thing the buyer is
                 trying to establish. The delivery price is the one honest
                 unknown; name it once and state what is actually owed. */}
-            <div className="co-delivery"><dt>Delivery</dt><dd>Price confirmed on the call — delivers across Lebanon</dd></div>
+            <div className="co-delivery"><dt>Delivery</dt><dd>{deliveryFee || "Price confirmed on the call — delivers across Lebanon"}</dd></div>
             {/* "Total" promised a delivered price the site cannot quote yet —
                 on a price-sensitive COD page the delivery cost is the number
                 the buyer is actually trying to establish. Name what this

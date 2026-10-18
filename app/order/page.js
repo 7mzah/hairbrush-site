@@ -1,11 +1,13 @@
-import { PRODUCT, CONTACT } from "@/lib/config";
+import { PRODUCT, CONTACT, DELIVERY } from "@/lib/config";
 import BackToProduct from "./BackToProduct";
 import OrderForm from "../OrderForm";
 
 // The checkout is kept out of the sitemap on purpose: this single-product
 // store's canonical page is the product page, and /order is the step after
-// "Order now" — not a second entry point to be indexed. next.config.js also
-// sets X-Robots-Tag: noindex at the HTTP level.
+// "Order now" — not a second entry point to be indexed. The noindex comes from
+// this metadata block (`robots: { index: false }`), not from a header rule:
+// next.config.mjs sets cache headers only. app/sitemap.js omits /order. Do not
+// add /order to the sitemap while `index: false` is here.
 export const metadata = {
   title: "Complete your order",
   description: "Cash on delivery — order now and we call you to confirm.",
@@ -32,6 +34,7 @@ export default function OrderPage() {
         image={PRODUCT.image}
         price={PRODUCT.price}
         currency={PRODUCT.currency}
+        deliveryFee={DELIVERY.fee}
       />
 
       {CONTACT?.phone ? <p className="co-help">Prefer to talk? Call us on <strong>{CONTACT.phone}</strong>.</p> : null}

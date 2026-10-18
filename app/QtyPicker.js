@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { markFromProduct } from "@/lib/navState";
+import { MAX_QTY } from "@/lib/config";
 
-const clamp = (n) => Math.min(10, Math.max(1, Number(n) || 1));
+const clamp = (n) => Math.min(MAX_QTY, Math.max(1, Number(n) || 1));
 
 // The quantity choice lives in the buy box; "Order now" hands it to the
 // checkout as ?qty=N so /order opens with the same count in its summary.
@@ -43,12 +44,15 @@ export default function QtyPicker() {
         <button
           type="button"
           aria-label="Increase quantity"
-          disabled={qty >= 10}
+          disabled={qty >= MAX_QTY}
           onClick={() => setQty((n) => clamp(n + 1))}
         >
           +
         </button>
       </div>
+      {/* The cap used to be silent: the + button dimmed at 10 and nothing said
+          why, so the only reading was "the site is broken". */}
+      {qty >= MAX_QTY && <span className="field-hint">Maximum {MAX_QTY} per order.</span>}
       {/* A real navigation, not next/link — deliberate, don't convert it back.
           The browser must create the checkout's history entry itself, in
           response to this click. A client-side navigation creates that entry

@@ -1,6 +1,6 @@
 import Gallery from "./Gallery";
 import QtyPicker from "./QtyPicker";
-import { PRODUCT, SITE_URL } from "@/lib/config";
+import { PRODUCT, DELIVERY, SITE_URL } from "@/lib/config";
 const { price, currency, currencyCode, name, brand } = PRODUCT;
 
 // Single source for the gallery AND the JSON-LD image list.
@@ -112,6 +112,16 @@ export default function Home() {
                   <dt>Payment</dt>
                   <dd>Cash on delivery</dd>
                 </div>
+                {/* Only once lib/config's DELIVERY block is filled in — the
+                    courier quote is still outstanding, so the row is absent
+                    rather than saying "TBD". fee is a display string ("$3",
+                    "Free"), so it is never added to a total. */}
+                {(DELIVERY.fee || DELIVERY.note) && (
+                  <div>
+                    <dt>Delivery</dt>
+                    <dd>{[DELIVERY.fee, DELIVERY.note].filter(Boolean).join(" — ")}</dd>
+                  </div>
+                )}
               </dl>
             </details>
           </div>

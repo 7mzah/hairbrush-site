@@ -131,8 +131,11 @@ main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
    drawn inside it, so the tap target grows without the dot changing size.
    bottom:2px keeps the circle where bottom:10px used to put it. */
 .dot{position:relative;width:24px;height:24px;padding:0;border:0;background:transparent;cursor:pointer}
-.dot::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:9px;height:9px;border:1px solid rgba(36,22,26,.35);border-radius:50%;background:rgba(255,255,255,.6)}
-.dot.is-active::after{background:var(--sun);border-color:var(--leaf)}
+/* Dark core + light rim, not a light fill with a dark ring: the dots sit on
+   whatever photo is behind them, and the old light-on-light pair vanished over
+   pale shots. The rim carries it on dark photos, the core on light ones. */
+.dot::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:9px;height:9px;border:1px solid rgba(255,255,255,.8);border-radius:50%;background:rgba(36,22,26,.5);box-shadow:0 1px 3px rgba(20,12,16,.3)}
+.dot.is-active::after{background:var(--sun);border-color:rgba(255,255,255,.9)}
 @media(min-width:640px){.dots{display:none}}
 .rail{display:grid;gap:.5rem;align-content:start}
 @media(max-width:639px){.rail{display:none}}
@@ -151,16 +154,11 @@ main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
    fact rows. Above it, the title is pulled to the front by its own order rule so
    the page still opens on the product name rather than the photo. */
 @media(max-width:1199px){.titleblock{order:1}.buyrow{order:2}.copyblock{order:3}}
-/* The lede sits directly under the h1 now, and the global .5rem bottom margin
-   — set back when the byline was there — leaves only 8px under a 26px heading. */
+/* The title block ships only the h1 (the price moved into the card), so this
+   margin is the whole gap between the title and the copy under it. */
 .titleblock h1{margin-bottom:1rem}
-.byline{font-size:13px;color:var(--muted);margin:0 0 .5rem}
-.byline span{color:var(--leaf);font-weight:600}
-/* The break between the price block and the first rule. .price's own 1rem margin
-   adds to this rather than collapsing — .panel is a contents reset, so both are
-   grid items — and the measured gap is 36px, not 20px. */
+/* The break before each disclosure rule. */
 .acc{margin-top:1.25rem}
-.lede{font-size:15px;line-height:1.5;margin:0 0 .75rem;max-width:62ch}
 .price{margin:0 0 1rem;font-size:30px;font-weight:500;display:flex;align-items:flex-start;gap:1px;line-height:1.1;color:var(--ink)}
 .price .cur{font-size:15px;position:relative;top:5px}
 /* .price base is the info-column treatment (30px); .buybox .price overrides it.
@@ -181,7 +179,10 @@ main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
 }
 
 /* ---- buy box ---- */
-.buybox{background:var(--paper);border:0;border-radius:1rem 1rem 4rem 1rem;padding:20px;font-size:14px;margin-top:.5rem;box-shadow:var(--lift)}
+/* No top margin: it used to add 8px to the stacked gap, and once the card
+   shares a row with the photo it left the card's top edge 8px below the
+   photo's. The .buyrow gap spaces it; the two tops line up. */
+.buybox{background:var(--paper);border:0;border-radius:1rem 1rem 4rem 1rem;padding:20px;font-size:14px;box-shadow:var(--lift)}
 /* From 768px the buy box shares a row with the photo, and the photo is much the
    taller of the two — 793px against a 300px card at 1199px. Rather than leave
    that half of the row blank, the card follows the photo down: it sticks to the
@@ -527,13 +528,21 @@ footer p{margin:.35rem 0}
 /* justify-content:center + gap: the arrows ride ~20px off the photo instead
    of being pinned to the ends of the 1200px stage (~370px away). */
 .lightbox-stage{position:relative;display:flex;align-items:center;justify-content:center;gap:20px;flex:1;max-width:1200px;width:100%;margin:0 auto;padding:.5rem 0}
-/* Shrink-wrap to the photo (which already fit-wraps via max-height) rather
-   than stretching to fill the stage. */
-.lightbox-viewer{flex:0 1 auto;width:fit-content;min-width:0;display:flex;align-items:center;justify-content:center;height:100%;max-height:72vh}
+/* Shrink-wraps to the photo on the width axis, but takes the stage's full
+   height — the stage is the flex leftover after the top row and the rail —
+   rather than stopping at a flat 72vh as it did before. That cap left ~130px
+   of the window unused at 1440x900 and made the expanded photo smaller than
+   the one on the page it expanded from. */
+.lightbox-viewer{flex:0 1 auto;width:fit-content;min-width:0;display:flex;align-items:center;justify-content:center;height:100%}
 .lightbox-figure{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;max-width:100%;max-height:100%}
 /* max-width:100%, not a vw figure: the viewer is already narrowed by the two
-   arrows, and anything wider pushes the next-arrow off-screen on a phone. */
-.lightbox-figure img{max-height:65vh;max-width:100%;width:auto;height:auto;object-fit:contain;border-radius:.75rem;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:lbZoom .22s cubic-bezier(.16,1,.3,1)}
+   arrows, and anything wider pushes the next-arrow off-screen on a phone.
+   The height cap is measured off the overlay's real chrome rather than a flat
+   65vh: padding 32 + top row 40 + stage padding 16 + rail 64 + a one-line
+   caption 31 = ~183px, so 200 fills the window and still leaves room for a
+   caption that wraps. At 1440x900 the expanded photo is 700 tall against the
+   693 of the inline one; at 65vh it was 585. */
+.lightbox-figure img{max-height:calc(100vh - 200px);max-width:100%;width:auto;height:auto;object-fit:contain;border-radius:.75rem;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:lbZoom .22s cubic-bezier(.16,1,.3,1)}
 @keyframes lbZoom{from{transform:scale(.94);opacity:.7}to{transform:scale(1);opacity:1}}
 .lightbox-caption{color:#dccdc6;font-size:14px;margin-top:.75rem;text-align:center;font-weight:500;width:100%;max-width:50ch;overflow-wrap:anywhere}
 
