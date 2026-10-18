@@ -1,7 +1,7 @@
 # Product Marketing Context
 
-**Document version:** v2
-**Last updated:** 2026-10-06
+**Document version:** v3
+**Last updated:** 2026-10-18
 
 Read by the `copywriting`, `copy-editing`, and `product-marketing` skills before
 they ask questions. Update this file instead of re-answering.
@@ -32,11 +32,11 @@ boar bristles.
 
 **Target companies:** n/a (B2C)
 **Decision-makers:** n/a (B2C)
-**Primary use case:** `[NEED: audience]` Not established. No order data.
-**Jobs to be done:** `[NEED: audience]`
+**Primary use case:** Broad hair-care shoppers in Lebanon — owner-supplied launch hypothesis (2026-10-18), not order data. Anyone who washes their hair and blow-dries it; wet-hair detangling and drying.
+**Jobs to be done:** Get through wet knots without tugging; cut a step out of blow-drying.
 **Use cases:** Detangling after washing; blow-drying while brushing.
 
-*Fill from real orders once traffic starts. Do not guess.*
+*Owner-set launch hypothesis, 2026-10-18. Replace with real order data as soon as traffic starts — do not treat this as validated.*
 
 ## Personas
 
@@ -78,7 +78,7 @@ same time.
 
 **Why that's better:** Dry and detangle in one pass.
 
-**Why customers choose us:** `[NEED: audience]`
+**Why customers choose us:** Launch hypothesis: one brush covers both the detangling and the drying, at $7 cash on delivery. Not validated against real buyers.
 
 ## Objections
 
@@ -118,6 +118,12 @@ descriptions.*
 stated openly. No hype, no invented statistics.
 **Personality:** straightforward, unfussy, honest.
 
+**2026-10-18 note:** the "About This Item" bullets now use owner-supplied
+product-marketing language ("Dual Bristle Synergy", "Geometric aerodynamic open
+back channels", "High-Velocity"). That is more technical than the voice above.
+It is kept deliberately in that one block — do not let it spread to the lede,
+the CTAs, or the checkout copy.
+
 ## Proof Points
 
 **Metrics:** `[NEED: proof]`
@@ -153,25 +159,42 @@ being collected.
 ## Hard rules
 
 - No fabricated social proof of any kind.
+- No performance statistics without a supplier test. The "cutting blow-drying
+  time by up to 45%" line was rejected 2026-10-18 on these grounds.
+- No material or temperature claims beyond the supplier spec sheet. "100%
+  natural boar", "248°F (120°C)" and "coffee-ground bio-composite" were all
+  rejected 2026-10-18; the documented terms are "Ball-tipped nylon pins with
+  boar bristles", "Coffee Material + ABS" and "Waterproof body".
 - No delivery price until Wakilni quotes it (`lib/config.js` → `DELIVERY`).
 - No contact details until a number exists (`lib/config.js` → `CONTACT`).
-- The FAQ array in `app/page.js` feeds both the `<details>` markup and the
-  `FAQPage` JSON-LD. Edit the array, never the HTML beside it.
 - Verification is `npm run build` only. No lint, test, or typecheck exists.
 
-## Copy direction agreed 2026-10-06
+## Copy direction agreed 2026-10-06 (updated 2026-10-18)
 
 - **h1** is Amazon's descriptive title formula, not a slogan:
-  `[product name], [use case], [key feature], [differentiator]`. Brand sits in a
-  byline beneath it, the way Amazon renders "by *[brand]*".
+  `[product name], [use case], [key feature], [differentiator]`.
+  **2026-10-18:** the brand now LEADS the h1 ("Silk & Bristle Curved Vented
+  Hairbrush with…"), the lede is removed, and the "by *[brand]*" byline is
+  removed — with the brand in the h1 the byline only repeated it. The h1 is
+  rendered from `PRODUCT.name` so it cannot drift again.
 - Rejected: "Brush your hair. Not the knots." — an AI-tell contrast reveal.
 - Visual target is an Amazon-style product page: white, dense, 8px radii, buy
   box card. Brand shows only in the wordmark, the accent colour, and voice.
-- The order form stays inline in the buy box, never behind a scroll CTA.
+- **2026-10-18:** the order form is no longer inline in the buy box — the
+  product page's CTA links to `/order`, which carries the form with
+  district/village comboboxes scoped to Lebanon. This supersedes
+  "stays inline in the buy box".
 
 ## Changelog
 
 *Newest first. One line per revision: what changed and why.*
+
+- v3 (2026-10-18) — Lebanon launch copy pass. Brand now leads the h1; lede and
+  byline removed; "About This Item" rewritten as four benefit-led bullets
+  (owner-supplied wording, tightened to drop the unevidenced "up to 45%" and
+  "micro-circulation" claims); spec table gains "Hair compatibility" and
+  relabels the resistance row; audience flag filled from the owner's launch
+  hypothesis; recorded that the order form has moved off the inline buy box.
 
 - v2 (2026-10-06) — Restructured into the skill's canonical section template; carried over product, differentiator, voice, hard rules and agreed copy direction; left audience, objections, customer language and proof as open flags rather than inventing them.
 - v1 (2026-10-06) — Initial context.

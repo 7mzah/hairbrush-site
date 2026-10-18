@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Single-page Next.js (App Router) product site with cash-on-delivery ordering, backed by libSQL via `@libsql/client` (Turso in the cloud, a local file in dev). Full env-var table and deploy notes are in `README.md`.
+Next.js (App Router) product site with cash-on-delivery ordering: a product page (`app/page.js`) and a separate `/order` checkout page (`app/order/page.js`), backed by libSQL via `@libsql/client` (Turso in the cloud, a local file in dev). Full env-var table and deploy notes are in `README.md`.
 
 There is **no lint, test, typecheck, or formatter tooling** — do not invent `npm run lint` / `npm test`. `npm run build` is the only automated verification.
 
@@ -12,10 +12,11 @@ There is **no lint, test, typecheck, or formatter tooling** — do not invent `n
 
 ## Architecture
 
-- `app/page.js` — the entire site in one server component (static, prerendered). All visible content edits go here.
-- `app/OrderForm.js` and `app/Gallery.js` — the only two `"use client"` files. The form posts JSON to `/api/orders`; the gallery owns the main-image and thumbnail-rail state.
+- `app/page.js` — the product page (server component, static, prerendered). All visible product-page content edits go here; its sidebar CTA links to `/order`.
+- `app/order/page.js` — the `/order` checkout page (server component, noindexed): back link, order-summary card, and the form. Checkout-page copy edits go here.
+- `app/OrderForm.js`, `app/Gallery.js` and `app/Combobox.js` — the only three `"use client"` files. OrderForm is the `/order` form (summary card, quantity, and an in-place confirmation panel after success) and posts JSON to `/api/orders`; the gallery owns the main-image and thumbnail-rail state; the combobox is the type-to-filter input used for district and village. Both lists open on focus; the village is scoped to the chosen district and offers closest-spelling suggestions when nothing matches exactly. Typing filters, but only a listed option may be submitted — free-typed locations are rejected client-side.
 - `app/api/orders/route.js` — `POST` inserts an order; `GET` returns every order, requiring header `x-admin-key` to match `ADMIN_KEY`. `GET` returns 401 when `ADMIN_KEY` is unset — intentional, not a bug.
-- `lib/config.js` — single source of truth for `PRODUCT` (`brand`, `name`, price, currency, `currencyCode`), plus optional `DELIVERY` and `CONTACT` blocks, and `SITE_URL`. Page prices, `app/layout.js` metadata, OpenGraph and the JSON-LD offer all derive from it; never hardcode the price or product name elsewhere. `PRODUCT.name` is the *product* ("Double Bristle Vented Brush"); `PRODUCT.brand` is the *brand* — JSON-LD uses `name` for `Product.name` and `brand` for `Brand.name`, and the footer shows `brand`.
+- `lib/config.js` — single source of truth for `PRODUCT` (`brand`, `name`, `shortName`, price, currency, `currencyCode`), plus optional `DELIVERY` and `CONTACT` blocks, and `SITE_URL`. Page prices, `app/layout.js` metadata, OpenGraph and the JSON-LD offer all derive from it; never hardcode the price or product name elsewhere. `PRODUCT.name` is the *product title* (a long Amazon-style title, and the `<h1>`); `PRODUCT.shortName` is the short label for the footer and the order receipt; `PRODUCT.brand` is the *brand* — JSON-LD uses `name` for `Product.name` and `brand` for `Brand.name`, and the footer's © line shows `brand`.
 - `lib/db.js` — manages database connection via `@libsql/client`. Supports cloud Turso (`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`) for Vercel and local file fallback (`orders.db`). Runs `CREATE TABLE IF NOT EXISTS` automatically.
 - `lib/notify.js` — best-effort new-order notification; every error is swallowed so it can never fail an order.
 - `lib/rateLimit.js` — in-memory sliding-window limiter, not shared across replicas.
@@ -23,7 +24,7 @@ There is **no lint, test, typecheck, or formatter tooling** — do not invent `n
 
 ## Editing content
 
-- The FAQ is one `FAQ` array in `app/page.js` feeding **both** the `<details>` markup and the `FAQPage` JSON-LD. Edit the array, never just the HTML, or the two drift apart.
+- The FAQ ("Common Questions") section was removed: there is no `FAQPage` JSON-LD anymore. If it is ever re-added, wire the same array to **both** the `<details>` markup and the JSON-LD so they cannot drift apart.
 - JSON-LD must stay a **single root object with `@graph`** — a top-level array is valid JSON-LD but makes consumers that call `node["@context"]` throw. Keep the `<` → `\u003c` escape when stringifying.
 - Gallery images come from the `PHOTOS` array in the same file (also feeds the JSON-LD `image` list); files live in `public/`. Those photos are **not tracked in git** — do not delete them. Current shots are placeholders — re-check alt text on reshoot.
 - Stack is Next 16 / React 19.
