@@ -52,28 +52,34 @@ main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
    row; from 1200px it dissolves again so its children can take their own
    columns. */
 .buyrow{display:grid;gap:1.25rem;align-items:start}
-/* From 1200px there is room for three columns with the title across the top: the
-   photo, the copy in a column of its own (300px floor, under which the bullets
-   wrap every third word), and the 300px buy box.
-   This replaces the old middle column that carried the title *and* the copy.
-   Sharing 1152-1439px between those two left the title 425px at 1200 — five
-   lines for a 140-character name — and the photo 277px, while the band below
-   gave the same photo 546px and the title two lines. Spanning the title hands
-   its width to the photo and the copy, which has a far narrower job, and the
-   copy then absorbs whatever width is left over at any size. */
+/* The title/copy wrapper is a contents reset below 1200px: .titleblock and
+   .copyblock are placed as items of .product itself, so the title can come first
+   while the copy follows the buy row. Declared here, before the three-column
+   rule, because that rule overrides it and has to win the cascade (same
+   specificity, later in the file). */
+.panel{display:contents}
+/* From 1200px: one row of three columns — the photo, the middle column (title
+   over copy), and the 300px buy box — so the product name, the photo and the
+   card all start on the same line.
+   The middle column is narrower than the hero, so the 140-character name wraps
+   to four lines at 1440px and seven at 1200px, where the column hits its 300px
+   floor. That is the price of the 553px photo at 1440; the alternative is the
+   old 0.9fr/1.1fr split, which gave the title 430px and the photo 277px at
+   1200px. */
 @media(min-width:1200px){
   .product{grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr) 300px;gap:2.5rem}
-  /* The Gallery is first in the DOM, so without this the title would be pushed
-     into row 2 and the page would open on the photo instead of the product. */
-  .titleblock{grid-column:1/-1;grid-row:1;order:-1}
   /* .buyrow opens up again here — the photo and the card go back to being
-     separate columns of the one wide row, with the copy between them. Placement
-     is explicit because the flattened order is photo, card, title, copy, which
-     would otherwise put the card in the copy's column. */
+     separate columns of the one wide row. The wrapper stays in the DOM because
+     below 1200px it is what gives the sticky card a row of its own; with
+     display:contents it simply stops being a grid item. */
   .buyrow{display:contents}
-  .media{grid-column:1;grid-row:2}
-  .copyblock{grid-column:2;grid-row:2}
-  .buybox{grid-column:3;grid-row:2}
+  /* .panel is the middle column: title and copy stacked inside one grid item,
+     which is how the column was built before the title briefly spanned the row.
+     Placement is explicit because the flattened order is photo, card, title,
+     copy — without it the card would land in the copy's column. */
+  .panel{display:block;grid-column:2;grid-row:1}
+  .media{grid-column:1;grid-row:1}
+  .buybox{grid-column:3;grid-row:1}
 }
 /* The two-column band: tablet through a 1199px window. The title takes the full
    width instead of being squeezed into half of it, and the photo shares its row
@@ -145,14 +151,9 @@ main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
 .thumb.is-active{border-color:var(--leaf);box-shadow:0 0 0 2px var(--sun)}
 
 /* ---- info column ---- */
-/* The wrapper is transparent: .titleblock and .copyblock are placed as items of
-   .product itself, so the title can span the row while the copy keeps a column.
-   That is the shape at every width — at phone width the two simply stack in the
-   title -> copy order below the photo. */
-.panel{display:contents}
-/* Below the third column those items reorder: title (h1) -> image -> buy box ->
-   fact rows. Above it, the title is pulled to the front by its own order rule so
-   the page still opens on the product name rather than the photo. */
+/* Below the third column the items reorder: title (h1) -> image -> buy box ->
+   fact rows. From 1200px these order rules do not apply — the panel is one grid
+   item and the h1 opens the middle column. */
 @media(max-width:1199px){.titleblock{order:1}.buyrow{order:2}.copyblock{order:3}}
 /* The title block ships only the h1 (the price moved into the card), so this
    margin is the whole gap between the title and the copy under it. */
@@ -335,12 +336,7 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
 .co-line{display:grid;grid-template-columns:56px 1fr;gap:.75rem;align-items:start}
 .co-line img{width:56px;height:70px;object-fit:cover;border-radius:.4rem;border:1px solid var(--line)}
 .co-line-name{margin:0;font-weight:600;font-size:13px}
-.co-line-price{margin:.15rem 0 0;font-size:13px;color:var(--leaf);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-/* The count is correctable here now, so it is a control rather than a pill:
-   the same .qty component the product page uses — same 44px targets, same
-   hover, same disabled state — in the summary card's round-cornered register. */
-.co-qty{border-radius:999px}
-.co-qty output{font-size:13px}
+.co-line-price{margin:.15rem 0 0;font-size:13px;color:var(--leaf)}
 /* delivery / total — receipt-grade: tabular numerals aligned,
    plum-tinted rules instead of beige (beige-on-white read as unprofessional) */
 .co-totals{display:grid;gap:.35rem;margin:0;border-top:1px solid rgba(74,47,54,.16);padding-top:.7rem;font-size:14px;font-variant-numeric:tabular-nums}

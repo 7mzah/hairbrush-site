@@ -126,25 +126,11 @@ export default function OrderForm({ productName, image, price, currency, deliver
   };
 
   const total = (Number(qty) || 1) * price;
-  // The count can be corrected here rather than by backing out of checkout, and
-  // the URL is rewritten to match: ?qty=N is where this state comes from on
-  // mount, so without the rewrite a refresh (or a phone call mid-checkout)
-  // silently reverted the order to whatever the product page had sent.
-  // replaceState, not pushState — the back button must still leave the checkout.
-  const setQtyAndUrl = (next) => {
-    const n = Math.min(MAX_QTY, Math.max(1, next));
-    setQty(n);
-    const url = new URL(window.location.href);
-    url.searchParams.set("qty", String(n));
-    window.history.replaceState(window.history.state, "", url);
-  };
-  const qtyStepper = (
-    <span className="qty co-qty" role="group" aria-label="Quantity">
-      <button type="button" aria-label="Decrease quantity" disabled={qty <= 1} onClick={() => setQtyAndUrl(qty - 1)}>−</button>
-      <output aria-live="polite">{qty}</output>
-      <button type="button" aria-label="Increase quantity" disabled={qty >= MAX_QTY} onClick={() => setQtyAndUrl(qty + 1)}>+</button>
-    </span>
-  );
+  // The count arrives from the product page as ?qty=N and is not editable here:
+  // changing it means going back, one tap on the pill above the h1. It is still
+  // stated when it is more than one — "Pay on delivery" below would otherwise
+  // be a figure the line item never mentions.
+  const linePrice = qty > 1 ? `${qty} × ${money(price, currency)}` : money(price, currency);
   const buyButton = (
     <button className="btn co-buy" disabled={state.status === "sending"}>
       <span className="cta-main">{state.status === "sending" ? "Confirming…" : "Confirm order"}</span>
@@ -284,12 +270,8 @@ export default function OrderForm({ productName, image, price, currency, deliver
             <img src={image} alt="" width="900" height="1125" loading="lazy" />
             <div className="co-line-info">
               <p className="co-line-name">{productName}</p>
-              <p className="co-line-price">
-                {money(price, currency)}
-                {qtyStepper}
-              </p>
+              <p className="co-line-price">{linePrice}</p>
               <input type="hidden" name="qty" value={qty} />
-              {qty >= MAX_QTY && <span className="field-hint">Maximum {MAX_QTY} per order.</span>}
             </div>
           </div>
           <dl className="co-totals">
