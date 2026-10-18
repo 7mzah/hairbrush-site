@@ -9,14 +9,18 @@ import { createPortal } from "react-dom";
 // arrows, keyboard controls, swipe, a thumbnail bar, and tap-backdrop to close.
 // `.strip` is always the image holder. On desktop it is overflow:hidden, which
 // blocks user scrolling but still allows programmatic scrollTo(), so clicking a
-// rail thumbnail (or a dot) moves it.
+// rail thumbnail (or a dot) moves it. On pointer-fine devices hovering a rail
+// thumbnail previews it the same way (Amazon-style) — the URL only commits on
+// click, so ?photo= stays shareable.
 export default function Gallery({ photos }) {
   const [active, setActive] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const stripRef = useRef(null);
   const dialogRef = useRef(null);
   const openerRef = useRef(null);
   const pendingRef = useRef(null); // strip index goTo() is animating towards
+  const closeTimer = useRef(null); // pending lightbox unmount
   const swipeRef = useRef(null); // where the lightbox swipe started
 
   // ?photo=3 opens on photo 3 so a single shot can be linked and shared.
@@ -41,13 +45,28 @@ export default function Gallery({ photos }) {
     window.history.replaceState(null, "", url);
   }, []);
 
+  // commit=false is the hover preview: it moves the strip (and the active
+  // ring) but leaves the URL alone, so ?photo= still means "the photo this
+  // page was shared on" — not whatever the mouse brushed past. Leaving the
+  // rail keeps the last hovered photo (Amazon's behavior, no snap-back).
   const goTo = useCallback(
-    (i) => {
-      setSlide(i);
+    (i, commit = true) => {
+      if (commit) setSlide(i);
+      else setActive(i);
       const el = stripRef.current;
       if (!el) return;
       pendingRef.current = i; // ignore the intermediate scroll frames this fires
-      el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (commit) {
+        // click: the glide is the spatial bridge between two photos
+        el.scrollTo({ left: i * el.clientWidth, behavior: reduce ? "auto" : "smooth" });
+      } else {
+        // hover: jump instantly, no bridge animation. An opacity dip was tried
+        // and read as a white flicker (the photo washes over the paper
+        // backdrop) — hover is the highest-frequency gesture on the page and
+        // Amazon-style instant swap is what the eye expects here.
+        el.scrollTo({ left: i * el.clientWidth, behavior: "instant" });
+      }
     },
     [setSlide]
   );
@@ -56,8 +75,25 @@ export default function Gallery({ photos }) {
   const prevPhoto = useCallback(() => goTo((active - 1 + photos.length) % photos.length), [active, photos.length, goTo]);
 
   const openLightbox = useCallback((e) => {
+    // a reopen during the 160ms exit must cancel the pending unmount
+    clearTimeout(closeTimer.current);
+    closeTimer.current = null;
+    setIsClosing(false);
     openerRef.current = e?.currentTarget || document.activeElement;
     setIsZoomed(true);
+  }, []);
+
+  // Exit mirrors the entrance (fade out ~20% faster than the 200ms fade in,
+  // the same asymmetry the sticky bar uses) instead of unmounting in one tick.
+  const closeLightbox = useCallback(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return setIsZoomed(false);
+    if (closeTimer.current) return; // already closing — Escape held down etc.
+    setIsClosing(true);
+    closeTimer.current = setTimeout(() => {
+      closeTimer.current = null;
+      setIsClosing(false);
+      setIsZoomed(false);
+    }, 160);
   }, []);
 
   // Open state only: scroll lock, focus into the dialog, Tab trap, Escape, and
@@ -76,7 +112,7 @@ export default function Gallery({ photos }) {
     dialog?.focus();
 
     const onKeyDown = (e) => {
-      if (e.key === "Escape") return setIsZoomed(false);
+      if (e.key === "Escape") return closeLightbox();
       if (e.key !== "Tab") return;
       const items = [...dialog.querySelectorAll("button")].filter((el) => !el.disabled && el.offsetParent !== null);
       if (!items.length) return;
@@ -133,7 +169,7 @@ export default function Gallery({ photos }) {
   // Click the dark backdrop anywhere that is not the photo or a control.
   const onBackdrop = (e) => {
     if (e.target.closest(".lightbox-figure, .lightbox-nav, .lightbox-close, .lightbox-thumb")) return;
-    setIsZoomed(false);
+    closeLightbox();
   };
 
   // Swipe left/right to change photo — but leave the thumbnail strip's own
@@ -159,7 +195,7 @@ export default function Gallery({ photos }) {
 
   const dialog = (
     <div
-      className="lightbox"
+      className={isClosing ? "lightbox is-closing" : "lightbox"}
       role="dialog"
       aria-modal="true"
       aria-label="Expanded product photos"
@@ -173,7 +209,7 @@ export default function Gallery({ photos }) {
         <span className="lightbox-count">
           {active + 1} / {photos.length}
         </span>
-        <button type="button" className="lightbox-close" aria-label="Close expanded view" onClick={() => setIsZoomed(false)}>
+        <button type="button" className="lightbox-close" aria-label="Close expanded view" onClick={closeLightbox}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <line x1="6" y1="6" x2="18" y2="18" />
             <line x1="18" y1="6" x2="6" y2="18" />
@@ -236,14 +272,23 @@ export default function Gallery({ photos }) {
           aria-label={`Product photos, ${photos.length} images. Click to expand.`}
         >
           {photos.map(([f, alt], i) => (
-            <figure key={f} onClick={openLightbox} title="Click to view full size">
+            /* onClick is a mouse convenience layered on the accessible
+               .expand-btn below — the figure carries no title/role, so the
+               a11y tree stays clean and keyboard users are not offered a
+               "button" that cannot be focused. */
+            <figure key={f} onClick={openLightbox}>
               <img
                 src={`/${f}.jpg`}
                 alt={alt}
                 width="900"
                 height="1125"
                 fetchPriority={i === 0 ? "high" : "auto"}
-                loading={i === 0 ? "eager" : "lazy"}
+                loading="eager" /* all five, not just the first: on desktop the
+                  strip is overflow:hidden, so lazy photos sit clipped outside
+                  the viewport and never download — the first hover (or a
+                  ?photo=N back-nav) would then swap to a photo that is not on
+                  disk yet. Five images is the page's whole payload; the rail
+                  reuses these same URLs, so nothing extra is fetched. */
               />
             </figure>
           ))}
@@ -286,6 +331,7 @@ export default function Gallery({ photos }) {
             className={i === active ? "thumb is-active" : "thumb"}
             aria-pressed={i === active}
             aria-label={`Show photo ${i + 1} of ${photos.length}`}
+            onMouseEnter={() => goTo(i, false)}
             onClick={() => goTo(i)}
           >
             <img src={`/${f}.jpg`} alt="" width="900" height="1125" loading="lazy" />
