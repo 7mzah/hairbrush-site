@@ -85,10 +85,26 @@ export default function Combobox({
         Math.max(0, Math.min(visible.length - 1, e.key === "ArrowDown" ? a + 1 : a - 1))
       );
     } else if (e.key === "Enter") {
-      if (open && active >= 0 && active < visible.length) {
-        e.preventDefault(); // pick instead of submitting the form
+      // The list is open the moment the field is focused, so a plain Enter used
+      // to fall straight through to the form's submit and paint every error at
+      // once while the customer was still choosing an address. While the list is
+      // open, Enter only ever settles the choice: the highlighted row, else the
+      // single exact match for what was typed, else it closes the list. A second
+      // Enter (list shut) submits normally.
+      if (!open) return;
+      e.preventDefault();
+      if (active >= 0 && active < visible.length) {
         pick(visible[active]);
+        return;
       }
+      const typed = norm(value);
+      const exact = typed
+        ? visible.filter(
+            (it) => norm(it.text) === typed || norm(it.name) === typed || norm(it.nameAr) === typed
+          )
+        : [];
+      if (exact.length === 1) pick(exact[0]);
+      else setOpen(false);
     } else if (e.key === "Escape") {
       setOpen(false);
     }

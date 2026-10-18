@@ -27,13 +27,15 @@ export default function OrderPage() {
           single exit at every width. BackToProduct owns the click, so the exit
           follows browser history rather than stacking a second checkout. */}
       <BackToProduct />
-      <h1>Complete your order</h1>
-
+      {/* No <h1> here: OrderForm owns the heading so a placed order can retitle
+          the page ("Order received") instead of keeping "Complete your order"
+          over its own receipt. */}
       <OrderForm
         productName={PRODUCT.shortName}
         image={PRODUCT.image}
         price={PRODUCT.price}
         currency={PRODUCT.currency}
+        currencyCode={PRODUCT.currencyCode}
         deliveryFee={DELIVERY.fee}
       />
 

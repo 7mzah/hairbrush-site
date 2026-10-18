@@ -1,6 +1,6 @@
 import { after } from "next/server";
 import { getDb } from "@/lib/db";
-import { PRODUCT, MAX_QTY } from "@/lib/config";
+import { PRODUCT, clampQty } from "@/lib/config";
 import { notifyNewOrder } from "@/lib/notify";
 import { rateLimit, clientIp } from "@/lib/rateLimit";
 import AREAS from "@/lib/areas.json";
@@ -36,7 +36,9 @@ export async function POST(req) {
   const legacyClient = b.district === undefined;
   const rawDistrict = clean(b.district, 40);
   const district = rawDistrict ? districtName(rawDistrict) : "";
-  const qty = Math.min(Math.max(parseInt(b.qty, 10) || 1, 1), MAX_QTY);
+  // Same helper the checkout uses: a whole number in [1, MAX_QTY], whatever the
+  // request body claims.
+  const qty = clampQty(b.qty);
   const phoneDigits = phone.replace(/\D/g, "").length;
   if (!name || !city || !address || (rawDistrict && !district) || phoneDigits < 7) {
     console.warn(

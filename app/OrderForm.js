@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import AREAS from "@/lib/areas.json";
-import { MAX_QTY } from "@/lib/config";
+import { clampQty } from "@/lib/config";
 import { norm } from "@/lib/norm";
 import Combobox from "./Combobox";
 
@@ -57,7 +57,7 @@ const resolveExact = (items, text) => {
   return hits.length === 1 ? hits[0] : null;
 };
 
-export default function OrderForm({ productName, image, price, currency, deliveryFee }) {
+export default function OrderForm({ productName, image, price, currency, currencyCode, deliveryFee }) {
   const [qty, setQty] = useState(1);
   const [state, setState] = useState({ status: "idle", msg: "" });
   const [districtText, setDistrictText] = useState("");
@@ -75,14 +75,31 @@ export default function OrderForm({ productName, image, price, currency, deliver
   const districtRef = useRef(null);
   const villageRef = useRef(null);
   const phoneRef = useRef(null);
+  const doneRef = useRef(null);
 
   // "Order now" on the product page carries its quantity as ?qty=N. Read it
   // after mount so /order stays statically prerendered (no useSearchParams
-  // CSR bailout); the summary picks the number up a frame later.
+  // CSR bailout); the summary picks the number up a frame later. Hand-edited
+  // or stale values are corrected in the URL as well, so the address bar, the
+  // line item and the stored order can never disagree: a decimal used to be
+  // shown as 2.5 × $7.00 / $17.50 and stored as 2 × $7.00.
   useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get("qty");
-    setQty(Math.min(MAX_QTY, Math.max(1, Number(q) || 1)));
+    const url = new URL(window.location.href);
+    const raw = url.searchParams.get("qty");
+    const q = clampQty(raw);
+    setQty(q);
+    if (raw !== null && raw !== String(q)) {
+      url.searchParams.set("qty", String(q));
+      window.history.replaceState(null, "", url);
+    }
   }, []);
+
+  // The checkout is replaced by a receipt on success, so pull focus into it:
+  // the button that was pressed is gone, and a screen reader that stays where
+  // it was hears nothing.
+  useEffect(() => {
+    if (state.status === "done") doneRef.current?.focus();
+  }, [state.status]);
 
   const selected =
     (districtId && DISTRICTS.find((d) => d.id === districtId)) || resolveExact(DISTRICTS, districtText);
@@ -136,8 +153,10 @@ export default function OrderForm({ productName, image, price, currency, deliver
       <span className="cta-main">{state.status === "sending" ? "Confirming…" : "Confirm order"}</span>
       {/* "+ delivery" because the delivery price is quoted on the confirmation
           call — promising a flat on-delivery amount here trained distrust the
-          moment the courier asked for more. */}
-      <span className="cta-sub">Pay {money(total, currency)} + delivery</span>
+          moment the courier asked for more. "cash on arrival" says out loud what
+          "Pay …" made people read as a card charge, and the ISO code is stated
+          because the cash in hand here is usually Lebanese pounds. */}
+      <span className="cta-sub">{money(total, currency)} {currencyCode} + delivery, cash on arrival</span>
     </button>
   );
 
@@ -224,11 +243,15 @@ export default function OrderForm({ productName, image, price, currency, deliver
     }
   }
 
-  // Order placed: the checkout is replaced in place by the confirmation.
+  // Order placed: the checkout is replaced in place by the confirmation. The
+  // heading belongs to this component, not to the page: it used to sit in
+  // app/order/page.js, so a placed order was still headed "Complete your
+  // order" above its own receipt. role=status + focus make the swap audible.
   if (state.status === "done") {
     return (
-      <div className="done-panel">
-        <h2>Order received</h2>
+      <>
+      <h1>Order received</h1>
+      <div className="done-panel" role="status" tabIndex={-1} ref={doneRef}>
         <p>{state.msg}</p>
         {receipt && (
           <div className="done-receipt">
@@ -241,70 +264,28 @@ export default function OrderForm({ productName, image, price, currency, deliver
         )}
         <Link className="btn" href="/">Back to product</Link>
       </div>
+      </>
     );
   }
 
   return (
-    // id="order" + tabIndex:-1 give the layout's "Skip to order form" link a
-    // real target here too — it pointed at nothing on this page, so the first
-    // Tab on checkout was a dead link.
-    // noValidate: the native bubbles would fire before submit ever reaches us,
-    // so the per-field errors below (aria-invalid + role=alert + focus) would
-    // only ever run for comboboxes, not for the plain inputs.
+    <>
+    <h1>Complete your order</h1>
+    {/* id="order" + tabIndex:-1 give the layout's "Skip to order form" link a
+        real target here too — it pointed at nothing on this page, so the first
+        Tab on checkout was a dead link.
+        noValidate: the native bubbles would fire before submit ever reaches us,
+        so the per-field errors below (aria-invalid + role=alert + focus) would
+        only ever run for comboboxes, not for the plain inputs. */}
     <form onSubmit={submit} className="checkout" id="order" tabIndex={-1} noValidate>
-      {/* Summary first in the DOM so mobile stacks it on top as the
-          "Order summary" accordion; the desktop grid moves it to the right
-          column (sticky) and hides the accordion toggle. */}
-      <aside className="co-summary">
-        <button
-          type="button"
-          className="co-sum-toggle"
-          aria-expanded={sumOpen}
-          onClick={() => setSumOpen((o) => !o)}
-        >
-          <span>Order summary · {money(total, currency)}</span>
-          <span className="co-chevron" aria-hidden="true" />
-        </button>
-        <div className={`co-sum-body${sumOpen ? " is-open" : ""}`}>
-          <div className="co-line">
-            <img src={image} alt="" width="900" height="1125" loading="lazy" />
-            <div className="co-line-info">
-              <p className="co-line-name">{productName}</p>
-              <p className="co-line-price">{linePrice}</p>
-              <input type="hidden" name="qty" value={qty} />
-            </div>
-          </div>
-          <dl className="co-totals">
-            {/* Two rows, one figure. This used to read Subtotal / Delivery /
-                Product total, where the first and last were the same number in
-                adjacent rows and the button printed it again — three statements
-                of one figure, none of which explained the thing the buyer is
-                trying to establish. The delivery price is the one honest
-                unknown; name it once and state what is actually owed. */}
-            <div className="co-delivery"><dt>Delivery</dt><dd>{deliveryFee || "Price confirmed on the call — delivers across Lebanon"}</dd></div>
-            {/* "Total" promised a delivered price the site cannot quote yet —
-                on a price-sensitive COD page the delivery cost is the number
-                the buyer is actually trying to establish. Name what this
-                number is, and say what is still missing. */}
-            <div className="co-total"><dt>Pay on delivery</dt><dd>{money(total, currency)} <span className="co-plus">+ delivery</span></dd></div>
-          </dl>
-          {/* desktop: the button lives in the summary, like Shopify's Pay now */}
-          <div className="co-buy-desktop">{buyButton}</div>
-        </div>
-        {/* These two lines answer the only questions that stop a COD order —
-            "will someone call me?" and "do I pay now?" — so they live OUTSIDE
-            the collapsible body: on a phone the accordion ships closed and
-            they were invisible right at the moment of commitment. */}
-        <p className="co-note">We will call you to confirm your order.</p>
-        <p className="co-note">✓ Cash on delivery — you pay when the brush is in your hands.</p>
-      </aside>
-
       <div className="co-main">
         <div className="co-form-card">
         <section className="co-section">
           <h2>Contact information</h2>
-          <label>Phone number
+          <div className="co-field">
+            <label htmlFor="phone">Phone number</label>
             <input
+              id="phone"
               name="phone"
               type="tel"
               inputMode="tel"
@@ -312,16 +293,19 @@ export default function OrderForm({ productName, image, price, currency, deliver
               autoComplete="tel"
               placeholder="03 123 456…"
               aria-invalid={fieldErr.phone ? true : undefined}
-              aria-describedby={fieldErr.phone ? "phone-err" : undefined}
+              aria-describedby={fieldErr.phone ? "phone-hint phone-err" : "phone-hint"}
               ref={phoneRef}
               onChange={() => fieldErr.phone && setFieldErr((e) => ({ ...e, phone: undefined }))}
             />
             {fieldErr.phone && <span className="field-err" id="phone-err" role="alert">{fieldErr.phone}</span>}
             {/* A COD checkout asks for a phone number and a home address and
                 currently says nothing about what happens to them. One line, at
-                the field, answering the question the buyer is actually asking. */}
-            <span className="field-hint">We use your number only to confirm and deliver this order.</span>
-          </label>
+                the field, answering the question the buyer is actually asking.
+                It sits outside the <label> on purpose: inside it, this sentence
+                became part of the field's accessible name ("Phone number We use
+                your number only…") and the label was read twice. */}
+            <span className="field-hint" id="phone-hint">We use your number only to confirm and deliver this order.</span>
+          </div>
         </section>
         <section className="co-section">
           <h2>Shipping address</h2>
@@ -384,12 +368,12 @@ export default function OrderForm({ productName, image, price, currency, deliver
             inputRef={districtRef}
           />
           <Combobox
-            label="Village"
+            label="Village or neighbourhood"
             value={villageText}
             onChange={changeVillage}
             onSelect={pickVillage}
             items={villageItems}
-            placeholder={district ? "Type your village…" : "Choose a district first…"}
+            placeholder={district ? "Type your village or area…" : "Choose a district first…"}
             disabled={!district}
             required
             name="city"
@@ -410,7 +394,66 @@ export default function OrderForm({ productName, image, price, currency, deliver
             collapsed accordion (the desktop copy above is hidden there) */}
         <div className="co-buy-mobile">{buyButton}</div>
       </div>
+
+      {/* Summary after the form in the DOM, so the keyboard and screen-reader
+          order is fields → confirm. Visually it is still the first row on a
+          phone and the right column from 768px (see the grid placements). */}
+      <aside className="co-summary">
+        <button
+          type="button"
+          className="co-sum-toggle"
+          aria-expanded={sumOpen}
+          aria-controls="order-summary-body"
+          onClick={() => setSumOpen((o) => !o)}
+        >
+          <span>Order summary</span>
+          <span className="co-chevron" aria-hidden="true" />
+        </button>
+        {/* What is being bought stays visible when the accordion is shut: a
+            collapsed summary that showed only a figure read as a delivered
+            total over an unseen product. The count and the item price are the
+            row; the fee lives in the note below. */}
+        <div className="co-line">
+          <img src={image} alt="" width="900" height="1125" loading="lazy" />
+          <div className="co-line-info">
+            <p className="co-line-name">{productName}</p>
+            <p className="co-line-price">{linePrice}</p>
+            <input type="hidden" name="qty" value={qty} />
+          </div>
+        </div>
+        <div className={`co-sum-body${sumOpen ? " is-open" : ""}`} id="order-summary-body">
+          <dl className="co-totals">
+            {/* Two rows, one figure. This used to read Subtotal / Delivery /
+                Product total, where the first and last were the same number in
+                adjacent rows and the button printed it again — three statements
+                of one figure, none of which explained the thing the buyer is
+                trying to establish. The delivery price is the one honest
+                unknown; name it once and state what is actually owed. */}
+            <div className="co-delivery"><dt>Delivery</dt><dd>{deliveryFee || "Confirmed on the call — we deliver across Lebanon"}</dd></div>
+            {/* "Total" promised a delivered price the site cannot quote yet —
+                on a price-sensitive COD page the delivery cost is the number
+                the buyer is actually trying to establish. Name what this
+                number is, and say what is still missing. */}
+            <div className="co-total"><dt>Pay on delivery</dt><dd>{money(total, currency)} <span className="co-plus">+ delivery</span></dd></div>
+          </dl>
+          {/* desktop: the button lives in the summary, like Shopify's Pay now */}
+          <div className="co-buy-desktop">{buyButton}</div>
+        </div>
+        {/* These two lines answer the only questions that stop a COD order —
+            "will someone call me?" and "do I pay now?" — so they live OUTSIDE
+            the collapsible body: on a phone the accordion ships closed and
+            they were invisible right at the moment of commitment. */}
+        <p className="co-note">We will call you to confirm the order and the delivery price.</p>
+        <p className="co-note">
+          <svg className="co-check" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M3 8.5l3.2 3.2L13 4.9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Cash on delivery — you pay when the brush is in your hands.
+        </p>
+      </aside>
+
       <p role="status" aria-live="polite" className={state.status}>{state.msg}</p>
     </form>
+    </>
   );
 }
