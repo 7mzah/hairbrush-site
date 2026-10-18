@@ -297,12 +297,15 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
    The summary comes AFTER the form in the DOM and is placed back above it
    here: otherwise the desktop CTA sat ahead of every field in the tab order,
    so a keyboard user could submit an empty checkout before reaching a field. */
-/* width:100% is load-bearing, not decoration: .orderpage is itself the <main>,
+/* Same container as the header, the product page and the footer: 1440 cap,
+   24px gutters. The checkout used to be capped at 960 and centred, so it sat
+   256px from each edge on a 1440 screen while the wordmark sat at 24 — the page
+   read as a narrow strip dropped into a wider site, and clicking "Order now"
+   visibly changed the page's edges.
+   width:100% is load-bearing, not decoration: .orderpage is itself the <main>,
    a flex item of a column body, and `margin:0 auto` suppresses the cross-axis
-   stretch — so with `width:auto` it shrank to its fit-content (~412px) at every
-   viewport between that and the 960px cap. That made the checkout a narrow strip
-   down the middle of a tablet. */
-.orderpage{width:100%;max-width:960px;margin:0 auto;padding:1.25rem 1rem 3rem}
+   stretch — with `width:auto` it would shrink to fit-content. */
+.orderpage{width:100%;max-width:1440px;margin:0 auto;padding:1.25rem 1.5rem 3rem}
 /* .orderpage is a <main>, so neutralize the global main>* container rule —
    its children sit inside this card-width column already */
 .orderpage>*{max-width:none;margin-inline:0;padding:0}
@@ -404,7 +407,9 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
 .co-section label,.co-field{display:grid;gap:.25rem;font-weight:600;font-size:13px}
 .row-eq2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 .co-help{margin:1.25rem 0 0;font-size:14px;color:var(--leaf);text-align:center}
-.done-panel{display:grid;gap:.5rem;justify-items:center;text-align:center;box-shadow:var(--lift);border-radius:.8rem;background:var(--paper);padding:1.75rem 1.25rem;margin-top:2rem;animation:doneIn .24s var(--ease-out) both}
+/* a receipt is one object: it keeps a readable column instead of stretching to
+   the full 1392px container now that the checkout is page-wide */
+.done-panel{display:grid;gap:.5rem;justify-items:center;text-align:center;max-width:720px;box-shadow:var(--lift);border-radius:.8rem;background:var(--paper);padding:1.75rem 1.25rem;margin-top:2rem;animation:doneIn .24s var(--ease-out) both}
 /* the "Order received" heading is the page's h1 now (owned by OrderForm), so
    the panel no longer carries an h2 of its own */
 .done-panel p{margin:0;color:var(--leaf)}
@@ -431,6 +436,21 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
 @media(max-width:767px){
   .co-buy-mobile{display:block}
   .row-eq2{grid-template-columns:1fr}
+}
+/* From 1200px there is room for a real two-column checkout: the receipt stops
+   growing at 400 (it is a receipt, not a surface that benefits from width) and
+   the form takes everything else. Its sections pair their fields up at the same
+   breakpoint, so widening the page never turns a phone number or a surname into
+   a 900px line: at 1440 the card is 960 and each input ~456, at 1200 it is 720
+   and each input ~340. The address, the name pair and each section heading span
+   the full card; district and village sit side by side, which is the order they
+   are filled in anyway. */
+@media(min-width:1200px){
+  .checkout{grid-template-columns:minmax(0,1fr) 400px;gap:2rem}
+  .co-section{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.85rem 1rem}
+  .co-section>h2,
+  .co-section>.row-eq2,
+  .co-section>label{grid-column:1/-1}
 }
 
 /* ---- info column: one column of disclosure rows ---- */
