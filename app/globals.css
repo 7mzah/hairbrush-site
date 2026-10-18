@@ -217,13 +217,11 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
    its children sit inside this card-width column already */
 .orderpage>*{max-width:none;margin-inline:0;padding:0}
 .orderpage h1{font-size:22px;line-height:1.25;margin:.35rem 0 0}
-/* The way back to the product page — one control, both call sites. A pill
-   because it is a small control (craft floor), now carrying a real 44px target
-   where the old rule was a ~20px-tall text link, and both labels are "Back to
-   product": two names for one destination read as two different exits.
-   Interaction is authored rather than left at the default underline — the
-   chevron steps left on hover and the surface answers, so the control reads as
-   pressable before it is pressed. */
+/* The only way back to the product page, sitting above the h1. A pill because
+   it is a small control (craft floor), carrying a real 44px target where the
+   old rule was a ~20px-tall text link. Interaction is authored rather than left
+   at the default underline — the chevron steps left on hover and the surface
+   answers, so the control reads as pressable before it is pressed. */
 .backlink{display:inline-flex;align-items:center;gap:.45rem;min-height:44px;margin:0 0 1rem;padding:.5rem 1.05rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--leaf);font-size:13px;font-weight:600;text-decoration:none;transition:background-color 160ms ease,border-color 160ms ease,transform 160ms var(--ease-out)}
 .backlink svg{width:16px;height:16px;flex:none;transition:transform 180ms var(--ease-out)}
 /* press feedback on the same 160ms beat as .btn, .thumb and the stepper */
@@ -281,20 +279,14 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
 .co-buy-desktop,.co-buy-mobile{display:none}
 /* The reassurance lines live outside the collapsible body (they answer the
    two questions that stop a COD order), so they carry their own padding and
-   a closing hairline inside the summary card at every breakpoint. */
-.co-summary>.co-note,.co-summary>.co-return{margin-inline:1rem}
+   a closing hairline inside the summary card at every breakpoint.
+   They are also the card's last children now that the summary's back link is
+   gone, so the card carries its own bottom padding — without it the closing
+   line sat flush against the rounded edge (measured 0px). */
+.co-summary{padding-bottom:.85rem}
+.co-summary>.co-note{margin-inline:1rem}
 .co-summary>.co-note:first-of-type{margin-top:.85rem;padding-top:.85rem;border-top:1px solid rgba(74,47,54,.13)}
-/* Below 768px the summary is a closed accordion at the top of the page while
-   the CTA sits at the foot of the form, so the escape hatch belongs beside the
-   button: the summary's copy is suppressed there and the one inside
-   .co-buy-mobile takes over. The same swap the buy button itself makes — one
-   copy on screen at every width. */
-.co-summary>.co-return{display:none}
 .co-note{margin:0;font-size:12px;color:var(--leaf);text-align:center}
-/* in the summary it is the quieter of two actions: Confirm order is the filled
-   primary above it, so this one runs the card's full width as a bordered
-   secondary instead of floating as centred text */
-.co-return{display:flex;justify-content:center}
 /* one card holds both form sections, split by a hairline — not two
    identical boxes (the template tell the design brief warns against) */
 .co-main{display:grid;gap:1rem;align-content:start}
@@ -327,10 +319,9 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
   .co-sum-toggle{display:none}
   .co-sum-body{display:grid}
   .co-buy-desktop{display:block}
-  .co-summary>.co-return{display:flex;margin-top:.85rem;margin-bottom:.85rem}
 }
 @media(max-width:767px){
-  .co-buy-mobile{display:grid;gap:.7rem}
+  .co-buy-mobile{display:block}
   .row-eq2{grid-template-columns:1fr}
 }
 
