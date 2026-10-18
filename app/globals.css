@@ -14,9 +14,9 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body),sy
 main{flex:1 0 auto}
 h1,h2{text-wrap:balance;scroll-margin-top:1rem;margin:0 0 .5rem;line-height:1.2}
 h1{font-family:var(--f-head);font-size:clamp(1.375rem,2.2vw,1.625rem);font-weight:600}
-/* Every h2 on the site (.buybox, .acc summary, .co-section, .done-panel)
-   resets this itself — this margin is just the default for any future bare
-   heading. */
+/* Every h2 on the site (.acc summary, .bb-more summary, .co-section,
+   .done-panel) resets this itself — this margin is just the default for any
+   future bare heading. */
 h2{font-family:var(--f-head);font-size:19px;font-weight:600;margin-top:1.25rem}
 main>*{max-width:1280px;margin-inline:auto;padding:0 1.5rem}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px;box-shadow:0 0 0 5px var(--leaf)}
@@ -117,8 +117,26 @@ main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
 .buybox{background:var(--paper);border:0;border-radius:1rem 1rem 4rem 1rem;padding:20px;font-size:14px;margin-top:.5rem;box-shadow:var(--lift)}
 .buybox .price{font-size:24px;margin-bottom:.75rem}
 .buybox .price .cur{font-size:12px;top:3px}
-.buybox h2{font-size:18px;margin-top:0;margin-bottom:.4rem}
-.reassure{margin:0 0 1rem;font-size:13px;color:var(--muted);line-height:1.45}
+/* Availability reads as part of the price rather than as a third form label:
+   pulled up against the figure it qualifies, stated in the brand's own
+   confirmation tone. Neutral, not a borrowed success green — "in stock" green
+   is the category default — and no second accent, because --sun belongs to the
+   one primary action below it. */
+.buybox .stock{margin:-.35rem 0 .85rem;font-size:13px;font-weight:700;color:var(--leaf)}
+/* The reassurances sit directly under the CTA, closed by default: the same
+   no-JS <details> pattern as the .acc rows, at card scale. */
+.bb-more{margin-top:1rem;border-top:1px solid var(--line)}
+.bb-more summary{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:44px;padding:.7rem 0;cursor:pointer;list-style:none}
+.bb-more summary::-webkit-details-marker{display:none}
+.bb-more summary::marker{content:""}
+.bb-more summary h2{font-family:var(--f-body);font-size:14px;font-weight:700;margin:0}
+/* same CSS-drawn chevron as the .acc rows: right when closed, down when open */
+.bb-more summary::after{content:"";flex:none;width:8px;height:8px;margin-right:.15rem;border-right:2px solid var(--leaf);border-bottom:2px solid var(--leaf);transform:rotate(-45deg);transition:transform .18s var(--ease-in-out)}
+.bb-more[open] summary::after{transform:rotate(45deg)}
+.bb-rows{margin:0;padding:0}
+.bb-rows>div{display:grid;grid-template-columns:minmax(84px,auto) 1fr;gap:.6rem;padding:.5rem 0;border-top:1px solid rgba(74,47,54,.13)}
+.bb-rows dt{font-size:13px;font-weight:700;color:var(--ink)}
+.bb-rows dd{margin:0;font-size:13px;color:var(--muted);line-height:1.45}
 
 /* ---- form ---- */
 /* district/village combobox: the input is an ordinary input (same shape as
@@ -293,11 +311,6 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b3261e}
   .row-eq2{grid-template-columns:1fr}
 }
 
-/* ---- trust ---- */
-.trust{list-style:none;margin:1rem 0 0;padding:0;display:grid;gap:.4rem;font-size:13px;color:var(--leaf)}
-.trust li{padding-left:1.35rem;position:relative}
-.trust li::before{content:"\2713";position:absolute;left:0;top:0;font-weight:800}
-
 /* ---- info column: one column of disclosure rows ---- */
 /* Replaces the old full-width Product Details section: all three rows now live
    in the info column and open on click. */
@@ -362,7 +375,6 @@ footer p{margin:.35rem 0}
 @media(max-width:640px){
   .btn{padding:.75rem 1.4rem}
   .buybox{padding:16px}
-  .reassure{margin-bottom:.75rem}
 }
 /* ---- sticky buy bar (phones only) ----
    The buy box sits ~800px down a 844px-tall phone, so once it scrolls away
@@ -371,15 +383,15 @@ footer p{margin:.35rem 0}
    competes with the buy box itself. Hidden entirely at >=641px. */
 .sticky-cta{display:none}
 @media(max-width:640px){
-  .sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:.75rem;background:var(--paper);border-top:1px solid var(--line);padding:.55rem 1rem calc(.55rem + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(36,22,26,.12);transform:translateY(110%);transition:transform .22s var(--ease-out)}
+  .sticky-cta{display:block;position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--paper);border-top:1px solid var(--line);padding:.6rem 1rem calc(.6rem + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(36,22,26,.12);transform:translateY(110%);transition:transform .22s var(--ease-out)}
   /* asymmetric: appearing is ease-out (responsive, the CTA arrives to meet
      the thumb), leaving is a faster ease-in (the system getting out of the
      way). Same speed both ways reads mechanical. */
   .sticky-cta:not(.is-on){transition-duration:.18s;transition-timing-function:cubic-bezier(.4,0,1,1)}
   .sticky-cta.is-on{transform:none}
-  .sticky-cta .btn{width:auto;padding:.55rem 1.35rem}
-  .sticky-price{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
-  .sticky-qty{font-weight:500;color:var(--muted);font-size:13px}
+  /* with the running total gone the bar is just the action, so the CTA fills it
+     rather than sitting in a corner of an otherwise empty strip */
+  .sticky-cta .btn{width:100%;padding:.7rem 1.4rem}
   /* keep the last of the footer clear of the bar — and only on the page that
      actually renders one (product page); /order has no .sticky-cta element */
   body:has(.sticky-cta.is-on){padding-bottom:calc(64px + env(safe-area-inset-bottom))}

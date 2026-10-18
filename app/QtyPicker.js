@@ -6,7 +6,10 @@ const clamp = (n) => Math.min(10, Math.max(1, Number(n) || 1));
 
 // The quantity choice lives in the buy box; "Order now" hands it to the
 // checkout as ?qty=N so /order opens with the same count in its summary.
-export default function QtyPicker({ currency = "$", price = 7 }) {
+// The picker prints no price of its own: the buy box states it once, and a
+// running total appearing on the button — and again in the sticky bar — as the
+// count changed was noise beside a figure the shopper had already read.
+export default function QtyPicker() {
   const [qty, setQty] = useState(1);
   const ctaRef = useRef(null);
   // Below 640px the buy box sits ~800px down the page, so once it scrolls
@@ -48,15 +51,10 @@ export default function QtyPicker({ currency = "$", price = 7 }) {
       </div>
       <Link className="btn" href={`/order?qty=${qty}`} ref={ctaRef}>
         Order now
-        {qty > 1 ? <span className="cta-sub">{currency}{(price * qty).toFixed(2)} total</span> : null}
       </Link>
       {/* Same destination as the button above; hidden from tab order and
           assistive tech until it is actually on screen. */}
       <div className={`sticky-cta${barOn ? " is-on" : ""}`} aria-hidden={!barOn}>
-        <span className="sticky-price">
-          {currency}{(price * qty).toFixed(2)}
-          {qty > 1 ? <span className="sticky-qty"> × {qty}</span> : null}
-        </span>
         <Link className="btn" href={`/order?qty=${qty}`} tabIndex={barOn ? 0 : -1}>
           Order now
         </Link>

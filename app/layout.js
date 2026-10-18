@@ -2,10 +2,6 @@ import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { PRODUCT, SITE_URL, CONTACT } from "@/lib/config";
 
-// Analytics is optional: unset PLAUSIBLE_DOMAIN and no tag is injected at all.
-// A plain deferred tag (not next/script) so it loads without waiting on hydration.
-const PLAUSIBLE_DOMAIN = process.env.PLAUSIBLE_DOMAIN;
-const PLAUSIBLE_SCRIPT = process.env.PLAUSIBLE_SCRIPT || "https://plausible.io/js/script.js";
 const head = Bricolage_Grotesque({ subsets: ["latin"], variable: "--f-head", weight: ["600", "800"] });
 const body = DM_Sans({ subsets: ["latin"], variable: "--f-body" });
 
@@ -47,7 +43,6 @@ export default function RootLayout({ children }) {
             </a>
           </div>
         </header>
-        {PLAUSIBLE_DOMAIN ? <script defer data-domain={PLAUSIBLE_DOMAIN} src={PLAUSIBLE_SCRIPT} /> : null}
         {children}
         <footer>
           <p className="foot-product" translate="no">

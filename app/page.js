@@ -1,6 +1,6 @@
 import Gallery from "./Gallery";
 import QtyPicker from "./QtyPicker";
-import { PRODUCT, SITE_URL, DELIVERY, CONTACT } from "@/lib/config";
+import { PRODUCT, SITE_URL } from "@/lib/config";
 const { price, currency, currencyCode, name, brand } = PRODUCT;
 
 // Single source for the gallery AND the JSON-LD image list.
@@ -38,25 +38,6 @@ const PACKAGE = [
   ["Size", "26.9 × 10.3 × 9.3 cm"],
   ["Weight", "85 g"],
 ];
-
-// Reassurance shown next to the CTA. Conditional rows drop out when their
-// config value is empty, so an unfilled slot never renders as a placeholder.
-const TRUST = [
-  "Cash on delivery",
-  DELIVERY.note,
-  CONTACT.phone ? `Questions? Call ${CONTACT.phone}` : null,
-].filter(Boolean);
-
-function Trust() {
-  if (TRUST.length === 0) return null;
-  return (
-    <ul className="trust">
-      {TRUST.map((t) => (
-        <li key={t}>{t}</li>
-      ))}
-    </ul>
-  );
-}
 
 // One root object with @graph: valid JSON-LD, and it survives naive consumers
 // that do node["@context"] on the root (a top-level array makes those throw).
@@ -178,12 +159,36 @@ export default function Home() {
             <span className="cur">{currency}</span>
             {price.toFixed(2)}
           </p>
-          <h2>Order in One Minute</h2>
-          <p className="reassure">
-            Fill in your details and we will call to confirm, then deliver to you.
-          </p>
-          <QtyPicker price={price} currency={currency} />
-          <Trust />
+          {/* Availability sits with the price, where the shopper asks it. Stated
+              in words and the brand's own confirmation tone: amber is spent on
+              the one primary action below, so a borrowed "in stock" green (or a
+              second amber mark) would pull attention off the CTA. Matches the
+              offer's schema.org `InStock` availability. */}
+          <p className="stock">In Stock</p>
+          <QtyPicker />
+          {/* The reassurances directly under the CTA, closed by default. Plain
+              <details> like the .acc rows, so this page stays a server
+              component; <summary> holds an <h2> so heading navigation survives
+              (same reasoning as the .acc rows above). */}
+          <details className="bb-more">
+            <summary>
+              <h2>Returns, gift options &amp; payment</h2>
+            </summary>
+            <dl className="bb-rows">
+              <div>
+                <dt>Returns</dt>
+                <dd>7-day replacement on defective items</dd>
+              </div>
+              <div>
+                <dt>Gift options</dt>
+                <dd>Available at checkout</dd>
+              </div>
+              <div>
+                <dt>Payment</dt>
+                <dd>Cash on delivery</dd>
+              </div>
+            </dl>
+          </details>
         </div>
       </section>
 

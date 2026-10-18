@@ -88,7 +88,7 @@ same time.
 
 **Anti-persona:** `[NEED: audience]`
 
-*Do not invent objections. Fill from Plausible events and real order feedback.*
+*Do not invent objections. Fill from real order feedback and customer questions.*
 
 ## Switching Dynamics
 
@@ -143,7 +143,7 @@ section must not ship empty.
 
 **Business goal:** First real orders through the page.
 **Conversion action:** Submit the inline COD order form.
-**Current metrics:** None. `PLAUSIBLE_DOMAIN` is unset, so no baseline is
+**Current metrics:** None. No analytics is installed, so there is no baseline
 being collected.
 
 ## Open flags

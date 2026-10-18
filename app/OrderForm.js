@@ -9,11 +9,6 @@ import Combobox from "./Combobox";
 const money = (n, c) =>
   c + new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
-// Analytics must never be able to fail an order, so swallow everything.
-function track(name) {
-  try { window.plausible?.(name); } catch {}
-}
-
 // District suggestions, in dataset order bucketed under their governorate
 // (Map keeps first-seen governorate order) so the list can show headings.
 const DISTRICTS = [...AREAS.districts.reduce((map, d) => {
@@ -213,7 +208,6 @@ export default function OrderForm({ productName, image, price, currency }) {
         form.reset(); setQty(1); setSumOpen(false);
         setDistrictText(""); setDistrictId(""); setVillageText(""); setVillageName("");
         setState({ status: "done", msg: "We will call you shortly to confirm delivery." });
-        track("Order Completed"); // the conversion event
       }
       else setState({ status: "error", msg: out.error || "Something went wrong. Please try again." });
     } catch {
