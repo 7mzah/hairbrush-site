@@ -18,14 +18,24 @@ h1{font-family:var(--f-head);font-size:clamp(1.375rem,2.2vw,1.625rem);font-weigh
    .done-panel) resets this itself — this margin is just the default for any
    future bare heading. */
 h2{font-family:var(--f-head);font-size:19px;font-weight:600;margin-top:1.25rem}
-main>*{max-width:1280px;margin-inline:auto;padding:0 1.5rem}
+/* 1440, not 1280: at 1280 the three desktop columns had to share 1232px, and the
+   300px buy box plus two 40px gaps left the media column 383px — a 315px hero
+   photo on a 1440 screen, with 104px of bare background beside it. The extra
+   160px makes that photo 387px and takes the empty margin down to 24px, and at
+   1329 (where the old cap began to bind) the photo goes 279px to 337px. The
+   container is still capped, so nothing stretches on a 1920 display.
+   Nothing narrower than 1329px changes at all. */
+main>*{max-width:1440px;margin-inline:auto;padding:0 1.5rem}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px;box-shadow:0 0 0 5px var(--leaf)}
 summary:hover{color:var(--leaf)}
 
 /* ---- brand header (replaces the breadcrumb) ---- */
 /* Lives in layout.js now (so /order inherits it), hence no `main>` prefix. */
 header.site{max-width:none;margin:0;padding:0;background:var(--paper);border-bottom:1px solid var(--line)}
-.site .inner{max-width:1280px;margin:0 auto;padding:.85rem 1.5rem}
+/* max-width tracks main>* (1440): the wordmark's left edge and the buy box's
+   right edge are the same vertical line, and widening only one of them makes
+   the page read as two different widths. */
+.site .inner{max-width:1440px;margin:0 auto;padding:.85rem 1.5rem}
 /* position:relative + an oversized ::after gives the wordmark a 44px hit area
    (its text box is 26px) without adding a pixel to the header bar */
 .wordmark{position:relative;font-family:var(--f-head);font-weight:800;font-size:1.35rem;color:var(--ink);text-decoration:none;letter-spacing:-.01em}
@@ -47,9 +57,14 @@ main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
    different pair from the old layout: the title takes the full width instead of
    being squeezed into half of it, and the photo shares its row with the buy box
    — the two things a buyer is actually comparing. The grid is capped at 900px
-   so the 4:5 photo cannot grow taller than the viewport it is read in. */
+   so the 4:5 photo cannot grow taller than the viewport it is read in.
+   The split is 62/38, not the old 55/45: a buy box is a card of the same few
+   controls at every width, so at 373px it was mostly empty margin while the
+   hero next to it was 387px. Handing those pixels to the photo costs the card
+   nothing — the same row now yields a 449px photo and a 311px card, and the
+   260px floor keeps the quantity stepper on one line at the 640px end. */
 @media(min-width:640px) and (max-width:1199px){
-  .product{max-width:900px;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:1.5rem}
+  .product{max-width:900px;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:1.5rem}
   .titleblock,.copyblock{grid-column:1/-1}
 }
 
