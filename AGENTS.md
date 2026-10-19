@@ -26,7 +26,7 @@ There is **no lint, test, typecheck, or formatter tooling** — do not invent `n
 
 - The FAQ ("Common Questions") section was removed: there is no `FAQPage` JSON-LD anymore. If it is ever re-added, wire the same array to **both** the `<details>` markup and the JSON-LD so they cannot drift apart.
 - JSON-LD must stay a **single root object with `@graph`** — a top-level array is valid JSON-LD but makes consumers that call `node["@context"]` throw. Keep the `<` → `\u003c` escape when stringifying.
-- Gallery images come from the `PHOTOS` array in the same file (also feeds the JSON-LD `image` list); files live in `public/`. Those photos are **not tracked in git** — do not delete them. Current shots are placeholders — re-check alt text on reshoot.
+- Gallery images come from the `PHOTOS` array in the same file (also feeds the JSON-LD `image` list); files live in `public/`. Those photos are **not tracked in git** — do not delete them. Current shots are placeholders — re-check alt text on reshoot. The brief for the real shoot is `SHOTLIST.md` (five 4:5 shots at 1200×1500 plus a 1200×630 OG card); its filenames differ from the placeholders, so the reshoot also updates `PHOTOS` and the OG image in `app/layout.js`.
 - Stack is Next 16 / React 19.
 
 ## Environment (`.env.local`, gitignored)
