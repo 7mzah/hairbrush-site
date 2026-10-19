@@ -64,13 +64,12 @@ main>.product{padding-top:1.25rem;padding-bottom:1.5rem}
 /* From 1200px: one row of three columns — the photo, the middle column (title
    over copy), and the 300px buy box — so the product name, the photo and the
    card all start on the same line.
-   The middle column is narrower than the hero, so the 140-character name wraps
-   to four lines at 1440px and seven at 1200px, where the column hits its 300px
-   floor. That is the price of the 553px photo at 1440; the alternative is the
-   old 0.9fr/1.1fr split, which gave the title 430px and the photo 277px at
-   1200px. */
+   The photo column is 1.35fr, not 1.6fr: at 1440 that is a 513px photo instead
+   of 555, and the 42px go to the title column (389 -> 431) rather than to the
+   buy box, which is a fixed 300px card at every width. 1.35 is as far as it can
+   come down before the title column hits its 300px floor at 1200px. */
 @media(min-width:1200px){
-  .product{grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr) 300px;gap:2.5rem}
+  .product{grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr) 300px;gap:2.5rem}
   /* .buyrow opens up again here — the photo and the card go back to being
      separate columns of the one wide row. The wrapper stays in the DOM because
      below 1200px it is what gives the sticky card a row of its own; with
